@@ -6,15 +6,17 @@
       <input type="file" @change="handleFileChange" />
     </div>
 
+    <span class="description">
+      Upload the json file among the results published by the
+      <a href="https://threejs.org/editor/">threejs editor.</a>
+    </span>
+
     <div class="input-wrapper">
       <span>Video</span>
       <input type="file" @change="handleVideoFileChange" multiple />
     </div>
 
-    <span class="description">
-      Upload the json file among the results published by the
-      <a href="https://threejs.org/editor/">threejs editor.</a>
-    </span>
+    <span class="description"> Upload the videos you want to insert into the 3d model.</span>
 
     <div class="video-wrapper">
       <div class="video-container" v-for="(src, index) in videoList" :key="src">
