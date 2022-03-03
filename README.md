@@ -1,6 +1,6 @@
-# vue3
+# three-js-study
 
-> From mj-boilerplate
+> Study how to expose 3D modeling to web using three.js.
 
 ## Command
 
