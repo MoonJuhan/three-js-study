@@ -7,6 +7,10 @@ const routesBasic = [
     path: '/basic',
     component: () => import(/* webpackChunkName: 'view-basic' */ '../components/views/ViewBasic.vue'),
   },
+  {
+    path: '/video',
+    component: () => import(/* webpackChunkName: 'view-video' */ '../components/views/ViewVideo.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)

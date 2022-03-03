@@ -40,29 +40,6 @@ const renderFunc = (renderer, scene, camera) => {
   renderer.render(scene, camera)
 }
 
-const setVideo = (scene) => {
-  // const video = document.getElementById('test-video')
-  // video.muted = true
-  // video.play()
-  // const texture = new THREE.VideoTexture(video)
-  // const getChildred = (list, name) => {
-  //   if (list.find((el) => el.name === name)) {
-  //     return list.find((el) => el.name === name)
-  //   }
-  //   const results = []
-  //   list.forEach((el) => {
-  //     console.log(el)
-  //     if (el.children) results.push(getChildred(el.children, name))
-  //   })
-  //   return results[0]
-  // }
-  // const screen = getChildred(scene.children, 'screen')
-  // // const screen = getChildred(scene.children, 'bottom');
-  // const material = new THREE.MeshBasicMaterial({ map: texture })
-  // screen.material = material
-  // console.log(screen)
-}
-
 const app = {
   Player: function () {
     const { renderer, loader, vrButton, dom } = initRenderer()
@@ -189,6 +166,37 @@ const app = {
       prevTime = time
     }
 
+    this.setVideo = (videoList) => {
+      const getChildred = (list, name) => {
+        if (list.find((el) => el.name === name)) {
+          return list.find((el) => el.name === name)
+        }
+        const results = []
+        list.forEach((el) => {
+          if (el.children) results.push(getChildred(el.children, name))
+        })
+        return results[0]
+      }
+
+      const refineIndex = (index) => {
+        if (index < 10) return `0${index}`
+
+        return index
+      }
+
+      videoList.forEach((video, index) => {
+        const id = `video_${refineIndex(index + 1)}`
+        const ref = document.getElementById(id)
+
+        const texture = new THREE.VideoTexture(ref)
+        const material = new THREE.MeshBasicMaterial({ map: texture })
+
+        const screen = getChildred(scene.children, id)
+
+        if (screen) screen.material = material
+      })
+    }
+
     this.play = function () {
       if (renderer.xr.enabled) dom.append(vrButton)
 
@@ -201,8 +209,6 @@ const app = {
       document.addEventListener('pointermove', onPointerMove)
 
       dispatch(events.start, arguments)
-
-      setVideo(scene)
 
       renderer.setAnimationLoop(animate)
     }
