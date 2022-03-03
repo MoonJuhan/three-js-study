@@ -5,6 +5,10 @@
       <span>3D Modeling File</span>
       <input type="file" @change="handleFileChange" />
     </div>
+    <span class="description">
+      Upload the json file among the results published by the
+      <a href="https://threejs.org/editor/">threejs editor.</a>
+    </span>
     <div ref="refThdViewer" />
   </div>
 </template>
@@ -67,6 +71,15 @@ export default {
 
     span {
       margin-right: 20px;
+    }
+  }
+
+  .description {
+    display: flex;
+    margin-bottom: 20px;
+
+    a {
+      margin-left: 4px;
     }
   }
 
