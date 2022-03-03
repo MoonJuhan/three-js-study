@@ -1,6 +1,6 @@
 # three-js-study
 
-> Study how to expose 3D modeling to web using three.js.
+> Use three.js to study techniques that show 3D modeling on the web.
 
 ## Command
 
