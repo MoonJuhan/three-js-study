@@ -334,7 +334,7 @@
 						{
 							"uuid": "78961858-9B73-45BA-A80C-C3B6D989DCE1",
 							"type": "Mesh",
-							"name": "TV",
+							"name": "video_03",
 							"userData": {
 								"transformData": {
 									"eulerOrder": "ZYX",
@@ -355,7 +355,7 @@
 						{
 							"uuid": "37E60C4B-30F8-45B2-9877-DC354F0F6320",
 							"type": "Mesh",
-							"name": "screen",
+							"name": "video_01",
 							"userData": {
 								"transformData": {
 									"eulerOrder": "ZYX",
@@ -376,7 +376,7 @@
 						{
 							"uuid": "88C503D1-37FC-40B5-BD7B-650DCD0850DE",
 							"type": "Mesh",
-							"name": "bottom",
+							"name": "video_02",
 							"userData": {
 								"transformData": {
 									"eulerOrder": "ZYX",
@@ -397,7 +397,7 @@
 						{
 							"uuid": "4DD7D075-79D9-4417-8322-1B033B38AD09",
 							"type": "Mesh",
-							"name": "stand",
+							"name": "video_04",
 							"userData": {
 								"transformData": {
 									"eulerOrder": "ZYX",
