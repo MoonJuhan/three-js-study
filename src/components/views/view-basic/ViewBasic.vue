@@ -6,7 +6,7 @@
 
     <SceneImages :thdModelJSON="thdModelJSON || {}" />
 
-    <SampleImages />
+    <SampleImages :thdModelJSON="thdModelJSON || {}" @set-thd-model-json="setThdModelJSON" />
 
     <h2>3D Viewer</h2>
 

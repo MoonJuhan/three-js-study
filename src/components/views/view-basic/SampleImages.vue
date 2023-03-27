@@ -21,6 +21,15 @@ import sample_scene_image_01 from '@/assets/sample-images/sample_scene_image_01.
 import sample_scene_image_02 from '@/assets/sample-images/sample_scene_image_02.png'
 import sample_scene_image_03 from '@/assets/sample-images/sample_scene_image_03.png'
 
+const emit = defineEmits(['set-thd-model-json'])
+
+const props = defineProps({
+  thdModelJSON: {
+    type: Object,
+    required: true,
+  },
+})
+
 const sampleImages = ref([])
 
 const initSampleImages = () => {
@@ -48,7 +57,22 @@ const initSampleImages = () => {
 onMounted(initSampleImages)
 
 const onClickSampleImage = (sampleImage) => {
-  console.log(sampleImage)
+  const changeSceneImage = (json, url) => {
+    const entries = Object.entries(json)
+
+    const sceneEntry = entries.find(([key]) => key === 'scene')
+    const sceneImages = sceneEntry[1].images
+
+    sceneImages[0].url = url
+    sceneImages[3].url = url
+
+    return Object.fromEntries([
+      ...entries.filter(([key]) => key !== 'scene'),
+      ['scene', { ...sceneEntry[1], images: sceneImages }],
+    ])
+  }
+
+  emit('set-thd-model-json', changeSceneImage(props.thdModelJSON, sampleImage.base64))
 }
 </script>
 
