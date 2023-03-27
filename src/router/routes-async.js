@@ -5,7 +5,7 @@ const routesBasic = [
   },
   {
     path: '/basic',
-    component: () => import(/* webpackChunkName: 'view-basic' */ '../components/views/ViewBasic.vue'),
+    component: () => import(/* webpackChunkName: 'view-basic' */ '../components/views/view-basic/ViewBasic.vue'),
   },
   {
     path: '/video',

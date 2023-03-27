@@ -1,24 +1,37 @@
 <template>
   <div class="view-basic">
     <h1>ViewBasic</h1>
-    <div class="input-wrapper">
+    <!-- <div class="input-wrapper">
       <span>3D Modeling File</span>
       <input type="file" @change="handleFileChange" />
     </div>
     <span class="description">
       Upload the json file among the results published by the
       <a href="https://threejs.org/editor/">threejs editor.</a>
-    </span>
-    <div ref="refThdViewer" />
+    </span> -->
+
+    <SceneImages :thdModelJSON="thdModelJSON" />
+
+    <SampleImages />
+
+    <h2>3D Viewer</h2>
+
+    <div ref="refThdViewer" class="thd-viewer" />
   </div>
 </template>
 
 <script>
 import { onMounted, ref } from 'vue'
-import tv from '../../assets/json/tv.json'
-import helpers from '../../helpers'
+import sample01 from '@/assets/json/sample01.json'
+import helpers from '@/helpers'
+import SceneImages from './SceneImages'
+import SampleImages from './SampleImages'
 
 export default {
+  components: {
+    SceneImages,
+    SampleImages,
+  },
   setup() {
     const refThdViewer = ref(null)
 
@@ -47,17 +60,22 @@ export default {
 
       reader.onload = (e) => {
         initThdViewer(JSON.parse(e.target.result))
+        refineImages(JSON.parse(e.target.result))
       }
 
       reader.readAsText(e.target.files[0])
     }
 
+    const thdModelJSON = ref()
+
     onMounted(() => {
-      initThdViewer(tv)
+      thdModelJSON.value = sample01
+      initThdViewer(thdModelJSON.value)
     })
 
     return {
       refThdViewer,
+      thdModelJSON,
       handleFileChange,
     }
   },
@@ -85,6 +103,18 @@ export default {
 
   canvas {
     width: 100% !important;
+  }
+
+  .image-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+
+    .image-wrapper img {
+      width: 100%;
+      object-fit: contain;
+    }
   }
 }
 </style>
