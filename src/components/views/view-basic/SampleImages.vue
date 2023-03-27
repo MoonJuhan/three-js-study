@@ -29,6 +29,7 @@ const initSampleImages = () => {
   imageFiles.forEach((imageFile) => {
     const image = new Image()
     image.crossOrigin = 'anonymous'
+
     image.onload = () => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
@@ -55,7 +56,6 @@ const onClickSampleImage = (sampleImage) => {
 .sample-images {
   display: flex;
   flex-direction: column;
-  row-gap: 20px;
 
   .image-wrapper {
     cursor: pointer;

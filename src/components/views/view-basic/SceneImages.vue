@@ -40,6 +40,5 @@ watch(
 .scene-images {
   display: flex;
   flex-direction: column;
-  row-gap: 20px;
 }
 </style>
