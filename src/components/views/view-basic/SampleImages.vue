@@ -64,7 +64,6 @@ const onClickSampleImage = (sampleImage) => {
     const sceneImages = sceneEntry[1].images
 
     sceneImages[0].url = url
-    sceneImages[3].url = url
 
     return Object.fromEntries([
       ...entries.filter(([key]) => key !== 'scene'),

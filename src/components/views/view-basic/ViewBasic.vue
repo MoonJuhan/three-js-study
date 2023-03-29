@@ -15,14 +15,23 @@
 </template>
 
 <script setup>
-import { onMounted, watch, ref } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from 'vue'
 // import sample01 from '@/assets/json/sample01.json'
-import helpers from '@/helpers'
 import ThdModelJSONUploader from './ThdModelJSONUploader'
 import SceneImages from './SceneImages'
 import SampleImages from './SampleImages'
+import useThreeJsViewer from '@/hooks/three-js-viewer'
+
+const { load, setThdViewerSize, dom, thdViewerPlay } = useThreeJsViewer()
 
 const refThdViewer = ref(null)
+
+const player = ref()
+
+const setPlayerSize = () => {
+  const { width, height } = refThdViewer.value.getBoundingClientRect()
+  setThdViewerSize(width, height)
+}
 
 const initThdViewer = (json) => {
   const removeChild = () => {
@@ -32,16 +41,10 @@ const initThdViewer = (json) => {
   }
   removeChild()
 
-  const player = new helpers.app.Player()
-  player.load(json)
-  player.setSize(window.innerWidth, window.innerHeight)
-  player.play()
-
-  refThdViewer.value.appendChild(player.dom)
-
-  window.addEventListener('resize', function () {
-    player.setSize(window.innerWidth, window.innerHeight)
-  })
+  load(json)
+  setPlayerSize()
+  thdViewerPlay()
+  refThdViewer.value.appendChild(dom)
 }
 
 const thdModelJSON = ref()
@@ -56,14 +59,29 @@ watch(
   }
 )
 
-// For Test
-// onMounted(() => {
-//   thdModelJSON.value = sample01
-// })
+onMounted(() => {
+  // For Test
+  // thdModelJSON.value = sample01
+
+  window.addEventListener('resize', () => {
+    setPlayerSize()
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', () => {
+    setPlayerSize()
+  })
+})
 </script>
 
 <style lang="scss">
 .view-basic {
+  .thd-viewer {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
   canvas {
     width: 100% !important;
   }
