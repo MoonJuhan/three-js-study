@@ -15,6 +15,10 @@ const routesBasic = [
     path: '/memory-test',
     component: () => import(/* webpackChunkName: 'view-memory-test' */ '../components/views/ViewMemoryTest.vue'),
   },
+  {
+    path: '/simple-sphere',
+    component: () => import(/* webpackChunkName: 'view-simple-sphere' */ '../components/views/ViewSimpleSphere.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)
