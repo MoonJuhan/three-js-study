@@ -1,13 +1,13 @@
 <template>
   <div class="sample-images">
-    <h2>Sample Images</h2>
+    <h2>Sample Images: Target Index {{ targetIndex }}</h2>
 
     <div class="image-grid">
       <div
         class="image-wrapper"
         v-for="sampleImage in sampleImages"
         :key="sampleImage.url"
-        @click="onClickSampleImage(sampleImage)"
+        @click="onClickSampleImage(targetIndex, sampleImage)"
       >
         <img :src="sampleImage.url" />
       </div>
@@ -17,13 +17,23 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import sample_scene_image_01 from '@/assets/sample-images/sample_scene_image_01.png'
-import sample_scene_image_02 from '@/assets/sample-images/sample_scene_image_02.png'
-import sample_scene_image_03 from '@/assets/sample-images/sample_scene_image_03.png'
+import sample000 from '@/assets/sample-images/000.png'
+import sample001 from '@/assets/sample-images/001.png'
+import sample002 from '@/assets/sample-images/002.png'
+import sample100 from '@/assets/sample-images/100.png'
+import sample101 from '@/assets/sample-images/101.png'
+import sample102 from '@/assets/sample-images/102.png'
+import sample300 from '@/assets/sample-images/300.png'
+import sample301 from '@/assets/sample-images/301.png'
+import sample302 from '@/assets/sample-images/302.png'
 
 const emit = defineEmits(['set-thd-model-json'])
 
 const props = defineProps({
+  targetIndex: {
+    type: Number,
+    required: true,
+  },
   thdModelJSON: {
     type: Object,
     required: true,
@@ -33,7 +43,12 @@ const props = defineProps({
 const sampleImages = ref([])
 
 const initSampleImages = () => {
-  const imageFiles = [sample_scene_image_01, sample_scene_image_02, sample_scene_image_03]
+  const imageFiles =
+    props.targetIndex === 0
+      ? [sample000, sample100, sample300]
+      : props.targetIndex === 1
+      ? [sample001, sample101, sample301]
+      : [sample002, sample102, sample302]
 
   imageFiles.forEach((imageFile) => {
     const image = new Image()
@@ -56,22 +71,8 @@ const initSampleImages = () => {
 
 onMounted(initSampleImages)
 
-const onClickSampleImage = (sampleImage) => {
-  const changeSceneImage = (json, url) => {
-    const entries = Object.entries(json)
-
-    const sceneEntry = entries.find(([key]) => key === 'scene')
-    const sceneImages = sceneEntry[1].images
-
-    sceneImages[0].url = url
-
-    return Object.fromEntries([
-      ...entries.filter(([key]) => key !== 'scene'),
-      ['scene', { ...sceneEntry[1], images: sceneImages }],
-    ])
-  }
-
-  emit('set-thd-model-json', changeSceneImage(props.thdModelJSON, sampleImage.base64))
+const onClickSampleImage = (targetIndex, { base64 }) => {
+  emit('set-thd-model-json', { url: base64, targetIndex })
 }
 </script>
 

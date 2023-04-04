@@ -27,10 +27,6 @@ const dispatch = (array, event) => {
   array.forEach((item) => item(event))
 }
 
-const renderFunc = (renderer, scene, camera) => {
-  renderer.render(scene, camera)
-}
-
 const useThreeJsViewer = () => {
   const { renderer, loader, dom } = initRenderer()
 
@@ -39,7 +35,7 @@ const useThreeJsViewer = () => {
 
   const load = (json) => {
     setRendererProjectSetting(json)
-    setScene(loader.parse(json.scene))
+    setThdViewerScene(json.scene)
     setCamera(loader.parse(json.camera), width.value, height.value)
 
     new OrbitControls(thdViewerCamera, renderer.domElement)
@@ -63,9 +59,13 @@ const useThreeJsViewer = () => {
     }
   }
 
+  const renderFunc = () => {
+    renderer.render(thdViewerScene, thdViewerCamera)
+  }
+
   let thdViewerScene
-  const setScene = (value) => {
-    thdViewerScene = value
+  const setThdViewerScene = (value) => {
+    thdViewerScene = loader.parse(value)
   }
 
   let thdViewerCamera
@@ -159,7 +159,7 @@ const useThreeJsViewer = () => {
       console.error(e.message || e, e.stack || '')
     }
 
-    renderFunc(renderer, thdViewerScene, thdViewerCamera)
+    renderFunc()
 
     prevTime.value = time
   }
@@ -180,11 +180,26 @@ const useThreeJsViewer = () => {
     renderer.setAnimationLoop(animate)
   }
 
+  const resetRenderer = () => {
+    if (!thdViewerScene?.children) return
+
+    thdViewerScene.children.forEach((c) => {
+      thdViewerScene.remove(c)
+    })
+
+    console.log(thdViewerScene)
+  }
+
   return {
     load,
     setThdViewerSize,
     dom,
     thdViewerPlay,
+    renderer,
+    thdViewerScene,
+    renderFunc,
+    setThdViewerScene,
+    resetRenderer,
   }
 }
 
