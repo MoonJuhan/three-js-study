@@ -1,6 +1,7 @@
 <template>
   <div class="view-basic">
     <h1>ViewBasic</h1>
+    <RouterLink to="/">Home</RouterLink>
 
     <ThdModelJSONUploader @set-thd-model-json="setThdModelJSON" />
 
