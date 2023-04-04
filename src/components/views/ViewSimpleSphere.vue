@@ -77,7 +77,7 @@ const render = () => {
   scene.add(light2)
 }
 
-let geometry, baseColorMap, displacementMap, metallicMap, normalMap, roughnessMap, aoMap, material
+let geometry, baseColorMap, displacementMap, metalnessMap, normalMap, roughnessMap, aoMap, material
 
 const renderSphere = () => {
   geometry = new THREE.SphereGeometry(1, 64, 64)
@@ -86,7 +86,7 @@ const renderSphere = () => {
   const loader = new THREE.TextureLoader()
   baseColorMap = loader.load(sample_base)
   displacementMap = loader.load(sample_disp)
-  metallicMap = loader.load(sample_mtl)
+  metalnessMap = loader.load(sample_mtl)
   normalMap = loader.load(sample_normal)
   roughnessMap = loader.load(sample_rough)
   aoMap = loader.load(sample_lt)
@@ -94,13 +94,13 @@ const renderSphere = () => {
   // create a material with the texture maps
   material = new THREE.MeshStandardMaterial({
     map: baseColorMap,
-    displacementMap: displacementMap,
+    displacementMap,
     displacementScale: displacementScale.value,
-    metalnessMap: metallicMap,
-    normalMap: normalMap,
-    roughnessMap: roughnessMap,
+    metalnessMap,
+    normalMap,
+    roughnessMap,
     roughness: roughness.value,
-    aoMap: aoMap,
+    aoMap,
   })
 
   sphere = new THREE.Mesh(geometry, material)
@@ -113,7 +113,7 @@ const removeSphere = () => {
   geometry.dispose()
   baseColorMap.dispose()
   displacementMap.dispose()
-  metallicMap.dispose()
+  metalnessMap.dispose()
   normalMap.dispose()
   roughnessMap.dispose()
   aoMap.dispose()
