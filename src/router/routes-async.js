@@ -17,7 +17,7 @@ const routesBasic = [
   },
   {
     path: '/simple-sphere',
-    component: () => import(/* webpackChunkName: 'view-simple-sphere' */ '../components/views/ViewSimpleSphere.vue'),
+    component: () => import(/* webpackChunkName: 'view-simple-sphere' */ '../components/views/view-simple-sphere/ViewSimpleSphere.vue'),
   },
 ]
 
