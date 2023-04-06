@@ -45,6 +45,14 @@ Can you understand the code below?
         :fixedPoint="1"
         label="normalScaleVector02"
       />
+      <AppSlider
+        :currentValue="scaleSize"
+        @update-current-value="setScaleSize"
+        :minNumber="0"
+        :maxNumber="2"
+        :fixedPoint="2"
+        label="Scale Size"
+      />
     </div>
 
     <div class="controls">
@@ -95,6 +103,11 @@ const setNormalScaleVector01 = (value) => {
 const normalScaleVector02 = ref(1)
 const setNormalScaleVector02 = (value) => {
   normalScaleVector02.value = value
+}
+
+const scaleSize = ref(0.1)
+const setScaleSize = (value) => {
+  scaleSize.value = value
 }
 
 const init = () => {
@@ -152,6 +165,8 @@ const renderSphere = () => {
   })
 
   sphere = new THREE.Mesh(geometry, material)
+  sphere.material.map.repeat.set(scaleSize.value, scaleSize.value)
+
   scene.add(sphere)
 }
 
@@ -178,7 +193,14 @@ const onClickReRender = () => {
 }
 
 watch(
-  () => [cameraZoom.value, heightScale.value, roughness.value, normalScaleVector01.value, normalScaleVector02.value],
+  () => [
+    cameraZoom.value,
+    heightScale.value,
+    roughness.value,
+    normalScaleVector01.value,
+    normalScaleVector02.value,
+    scaleSize.value,
+  ],
   () => {
     onClickReRender()
   }
