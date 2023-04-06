@@ -29,6 +29,22 @@ Can you understand the code below?
         :fixedPoint="1"
         label="Roughness"
       />
+      <AppSlider
+        :currentValue="normalScaleVector01"
+        @update-current-value="setNormalScaleVector01"
+        :minNumber="0"
+        :maxNumber="1"
+        :fixedPoint="1"
+        label="normalScaleVector01"
+      />
+      <AppSlider
+        :currentValue="normalScaleVector02"
+        @update-current-value="setNormalScaleVector02"
+        :minNumber="0"
+        :maxNumber="1"
+        :fixedPoint="1"
+        label="normalScaleVector02"
+      />
     </div>
 
     <div class="controls">
@@ -68,6 +84,16 @@ const setHeightScale = (value) => {
 const roughness = ref(0.3)
 const setRoughness = (value) => {
   roughness.value = value
+}
+
+const normalScaleVector01 = ref(1)
+const setNormalScaleVector01 = (value) => {
+  normalScaleVector01.value = value
+}
+
+const normalScaleVector02 = ref(1)
+const setNormalScaleVector02 = (value) => {
+  normalScaleVector02.value = value
 }
 
 const init = () => {
@@ -118,6 +144,7 @@ const renderSphere = () => {
     displacementScale: heightScale.value,
     metalnessMap,
     normalMap,
+    normalScale: new THREE.Vector2(normalScaleVector01.value, normalScaleVector02.value),
     roughnessMap,
     roughness: roughness.value,
     aoMap,
@@ -150,7 +177,7 @@ const onClickReRender = () => {
 }
 
 watch(
-  () => [cameraZoom.value, heightScale.value, roughness.value],
+  () => [cameraZoom.value, heightScale.value, roughness.value, normalScaleVector01.value, normalScaleVector02.value],
   () => {
     onClickReRender()
   }
@@ -204,7 +231,7 @@ onUnmounted(() => {
 
   .controls {
     display: grid;
-    grid-template-columns: repeat(4, 200px);
+    grid-template-columns: repeat(5, 240px);
     column-gap: 10px;
   }
 
