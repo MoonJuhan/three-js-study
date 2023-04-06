@@ -50,6 +50,7 @@ Can you understand the code below?
     <div class="controls">
       <button @click="onClickRemove()" class="re-render-button">Remove</button>
       <button @click="onClickReRender()" class="re-render-button">Re Render</button>
+      <button @click="isRotate = !isRotate" class="re-render-button">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
     </div>
 
     <div ref="refThdViewer" />
@@ -189,12 +190,15 @@ const onClickRemove = () => {
 
 const animation = ref()
 
+const isRotate = ref(false)
+
 const animate = function () {
   animation.value = requestAnimationFrame(animate)
 
-  // rotate the sphere
-  sphere.rotation.x += 0.005
-  sphere.rotation.y += 0.005
+  if (isRotate.value) {
+    sphere.rotation.x += 0.005
+    sphere.rotation.y += 0.005
+  }
 
   renderer.render(scene, camera)
 }
