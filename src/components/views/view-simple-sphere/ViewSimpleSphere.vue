@@ -6,18 +6,29 @@ Can you understand the code below?
     <RouterLink to="/">Home</RouterLink>
 
     <div class="controls">
-      <div class="control">
-        <span>camera zoom</span>
-        <input type="number" v-model="cameraZoom" />
-      </div>
-      <div class="control">
-        <span>displacement scale</span>
-        <input type="number" v-model="displacementScale" step="0.01" />
-      </div>
-      <div class="control">
-        <span>roughness</span>
-        <input type="number" v-model="roughness" step="0.1" />
-      </div>
+      <AppSlider
+        :currentValue="cameraZoom"
+        @update-current-value="setCameraZoom"
+        :minNumber="0"
+        :maxNumber="10"
+        label="Camera Zoom"
+      />
+      <AppSlider
+        :currentValue="heightScale"
+        @update-current-value="setHeightScale"
+        :minNumber="0"
+        :maxNumber="0.5"
+        :fixedPoint="2"
+        label="Height Scale"
+      />
+      <AppSlider
+        :currentValue="roughness"
+        @update-current-value="setRoughness"
+        :minNumber="0"
+        :maxNumber="1"
+        :fixedPoint="1"
+        label="Roughness"
+      />
     </div>
 
     <div class="controls">
@@ -30,7 +41,7 @@ Can you understand the code below?
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as THREE from 'three'
 import { RouterLink } from 'vue-router'
 import sample_base from '@/assets/sample-6-type-map/sample-base.png'
@@ -39,14 +50,25 @@ import sample_lt from '@/assets/sample-6-type-map/sample-lt.png'
 import sample_mtl from '@/assets/sample-6-type-map/sample-mtl.png'
 import sample_normal from '@/assets/sample-6-type-map/sample-normal.png'
 import sample_rough from '@/assets/sample-6-type-map/sample-rough.png'
+import AppSlider from './AppSlider.vue'
 
 let camera, scene, renderer, sphere
 
 const refThdViewer = ref()
 
 const cameraZoom = ref(3)
-const displacementScale = ref(0.01)
+const setCameraZoom = (value) => {
+  cameraZoom.value = value
+}
+const heightScale = ref(0.01)
+const setHeightScale = (value) => {
+  heightScale.value = value
+}
+
 const roughness = ref(0.3)
+const setRoughness = (value) => {
+  roughness.value = value
+}
 
 const init = () => {
   const container = document.createElement('div')
@@ -82,7 +104,6 @@ let geometry, baseColorMap, displacementMap, metalnessMap, normalMap, roughnessM
 const renderSphere = () => {
   geometry = new THREE.SphereGeometry(1, 64, 64)
 
-  // load the texture maps using TextureLoader
   const loader = new THREE.TextureLoader()
   baseColorMap = loader.load(sample_base)
   displacementMap = loader.load(sample_disp)
@@ -91,11 +112,10 @@ const renderSphere = () => {
   roughnessMap = loader.load(sample_rough)
   aoMap = loader.load(sample_lt)
 
-  // create a material with the texture maps
   material = new THREE.MeshStandardMaterial({
     map: baseColorMap,
     displacementMap,
-    displacementScale: displacementScale.value,
+    displacementScale: heightScale.value,
     metalnessMap,
     normalMap,
     roughnessMap,
@@ -111,6 +131,7 @@ const removeSphere = () => {
   scene.remove(sphere)
 
   geometry.dispose()
+
   baseColorMap.dispose()
   displacementMap.dispose()
   metalnessMap.dispose()
@@ -124,19 +145,25 @@ const removeSphere = () => {
 
 const onClickReRender = () => {
   removeSphere()
-
-  setTimeout(() => {
-    camera.position.z = cameraZoom.value
-    renderSphere()
-  }, 400)
+  camera.position.z = cameraZoom.value
+  renderSphere()
 }
+
+watch(
+  () => [cameraZoom.value, heightScale.value, roughness.value],
+  () => {
+    onClickReRender()
+  }
+)
 
 const onClickRemove = () => {
   removeSphere()
 }
 
+const animation = ref()
+
 const animate = function () {
-  requestAnimationFrame(animate)
+  animation.value = requestAnimationFrame(animate)
 
   // rotate the sphere
   sphere.rotation.x += 0.005
@@ -152,7 +179,17 @@ onMounted(() => {
   animate()
 })
 
-onUnmounted(removeSphere)
+const resetVariables = () => {
+  camera = null
+  scene = null
+  renderer = null
+}
+
+onUnmounted(() => {
+  cancelAnimationFrame(animation.value)
+  removeSphere()
+  resetVariables()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -160,6 +197,10 @@ onUnmounted(removeSphere)
   display: flex;
   flex-direction: column;
   row-gap: 20px;
+
+  > a {
+    width: fit-content;
+  }
 
   .controls {
     display: grid;
