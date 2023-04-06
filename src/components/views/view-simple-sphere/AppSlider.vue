@@ -68,7 +68,6 @@ const onMouseMove = (e) => {
 
     const percent = (e.clientX - left) / (right - left)
     const value = parseFloat((minNumber + (maxNumber - minNumber) * percent).toFixed(fixedPoint))
-    console.log(value)
 
     if (value <= minNumber) {
       emit('update-current-value', minNumber)
