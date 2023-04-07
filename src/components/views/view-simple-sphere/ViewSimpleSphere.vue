@@ -108,7 +108,7 @@ const renderSphere = (
     scaleSize: 1,
   }
 ) => {
-  const { heightScale, normalScaleVector01, normalScaleVector02, roughness, scaleSize } = options
+  const { heightScale, normalScaleVector01, normalScaleVector02, roughness, scaleSize, envMapIntensity } = options
 
   material = new THREE.MeshStandardMaterial({
     map: baseColorMap,
@@ -118,8 +118,9 @@ const renderSphere = (
     normalMap,
     normalScale: new THREE.Vector2(normalScaleVector01, normalScaleVector02),
     roughnessMap,
-    roughness: roughness,
+    roughness,
     aoMap,
+    envMapIntensity,
   })
 
   if (textureEquirec) material.envMap = textureEquirec

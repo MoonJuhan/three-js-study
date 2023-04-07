@@ -1,5 +1,6 @@
 <template>
   <div class="simple-sphere-controls">
+    <span class="controls-label">Camera And Animation Controls</span>
     <div class="controls">
       <AppSlider
         :currentValue="cameraZoom"
@@ -8,6 +9,11 @@
         :maxNumber="10"
         label="Camera Zoom"
       />
+      <button @click="emit('change-is-rotate')">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
+    </div>
+
+    <span class="controls-label">Map Controls</span>
+    <div class="controls">
       <AppSlider
         :currentValue="heightScale"
         @update-current-value="setHeightScale"
@@ -48,6 +54,10 @@
         :fixedPoint="2"
         label="Scale Size"
       />
+    </div>
+
+    <span class="controls-label">Background Controls</span>
+    <div class="controls">
       <div class="control">
         <span>HDRI Background</span>
 
@@ -57,10 +67,15 @@
           </option>
         </select>
       </div>
-    </div>
 
-    <div class="controls">
-      <button @click="emit('change-is-rotate')">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
+      <AppSlider
+        :currentValue="envMapIntensity"
+        @update-current-value="setEnvMapIntensity"
+        :minNumber="0"
+        :maxNumber="10"
+        :fixedPoint="0"
+        label="Env Map Intensity"
+      />
     </div>
   </div>
 </template>
@@ -108,6 +123,11 @@ const setScaleSize = (value) => {
   scaleSize.value = value
 }
 
+const envMapIntensity = ref(1)
+const setEnvMapIntensity = (value) => {
+  envMapIntensity.value = value
+}
+
 const selectedBackground = ref('sample_background_01')
 const backgroundOptions = [
   { name: 'sample_background_01', src: sample_background_01 },
@@ -124,6 +144,7 @@ watch(
     normalScaleVector01.value,
     normalScaleVector02.value,
     scaleSize.value,
+    envMapIntensity.value,
   ],
   () => {
     emit('re-render-sphere', {
@@ -133,6 +154,7 @@ watch(
       normalScaleVector01: normalScaleVector01.value,
       normalScaleVector02: normalScaleVector02.value,
       scaleSize: scaleSize.value,
+      envMapIntensity: envMapIntensity.value,
     })
   }
 )
@@ -149,7 +171,13 @@ watch(
 .simple-sphere-controls {
   display: flex;
   flex-direction: column;
-  row-gap: 20px;
+  row-gap: 40px;
+
+  .controls-label {
+    font-weight: 500;
+    font-size: 20px;
+    margin-bottom: -32px;
+  }
 
   .controls {
     display: grid;
@@ -160,6 +188,7 @@ watch(
     > button {
       font-size: 16px;
       border: 1px solid black;
+      cursor: pointer;
     }
   }
 
