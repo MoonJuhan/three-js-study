@@ -81,6 +81,7 @@ import sample_background_02 from '@/assets/sample-hdri-background/sample-hdri-ba
 import sample_background_03 from '@/assets/sample-hdri-background/sample-hdri-background-03.png'
 import sample_background_04 from '@/assets/sample-hdri-background/sample-hdri-background-04.png'
 import sample_background_05 from '@/assets/sample-hdri-background/sample-hdri-background-05.jpg'
+import sample_background_06 from '@/assets/sample-hdri-background/sample-hdri-background-06.jpg'
 
 const emit = defineEmits(['set-options', 're-render-sphere', 're-render-background', 'change-is-rotate'])
 
@@ -125,6 +126,7 @@ const backgroundOptions = [
   { name: 'sample_background_03', src: sample_background_03 },
   { name: 'sample_background_04', src: sample_background_04 },
   { name: 'sample_background_05', src: sample_background_05 },
+  { name: 'sample_background_06', src: sample_background_06 },
 ]
 
 watch(
