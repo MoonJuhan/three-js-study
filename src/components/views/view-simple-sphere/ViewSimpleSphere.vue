@@ -53,6 +53,15 @@ Can you understand the code below?
         :fixedPoint="2"
         label="Scale Size"
       />
+      <div class="control">
+        <span>HDRI Background</span>
+
+        <select v-model="selectedBackground">
+          <option v-for="name in backgroundOptions.map(({ name }) => name)" :key="name" :value="name">
+            {{ name }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div class="controls">
@@ -75,6 +84,10 @@ import sample_lt from '@/assets/sample-6-type-map/sample-lt.png'
 import sample_mtl from '@/assets/sample-6-type-map/sample-mtl.png'
 import sample_normal from '@/assets/sample-6-type-map/sample-normal.png'
 import sample_rough from '@/assets/sample-6-type-map/sample-rough.png'
+import sample_background_01 from '@/assets/sample-hdri-background/sample-hdri-background-01.png'
+import sample_background_02 from '@/assets/sample-hdri-background/sample-hdri-background-02.png'
+import sample_background_03 from '@/assets/sample-hdri-background/sample-hdri-background-03.png'
+import sample_background_04 from '@/assets/sample-hdri-background/sample-hdri-background-04.png'
 import AppSlider from '@/components/app/AppSlider.vue'
 
 let camera, scene, renderer, sphere
@@ -105,7 +118,7 @@ const setNormalScaleVector02 = (value) => {
   normalScaleVector02.value = value
 }
 
-const scaleSize = ref(0.1)
+const scaleSize = ref(1)
 const setScaleSize = (value) => {
   scaleSize.value = value
 }
@@ -115,7 +128,7 @@ const init = () => {
   refThdViewer.value.appendChild(container)
 
   scene = new THREE.Scene()
-  // scene.background = new THREE.Color(0xc4c4c4)
+  scene.background = new THREE.Color(0xffffff)
 
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
   camera.position.z = 3
@@ -125,18 +138,16 @@ const init = () => {
   container.appendChild(renderer.domElement)
 }
 
-const render = () => {
-  var light = new THREE.DirectionalLight(0xffffff, 1)
-  light.position.set(1, 1, 1)
-  scene.add(light)
-
-  // add some lights to the scene
-  const light1 = new THREE.PointLight(0xffffff, 1, 100)
-  light1.position.set(0, 5, 0)
-  scene.add(light1)
-
-  const light2 = new THREE.AmbientLight(0xffffff, 0.2)
-  scene.add(light2)
+const renderLight = () => {
+  // var light = new THREE.DirectionalLight(0xffffff, 1)
+  // light.position.set(1, 1, 1)
+  // scene.add(light)
+  // // add some lights to the scene
+  // const light1 = new THREE.PointLight(0xffffff, 1, 100)
+  // light1.position.set(0, 5, 0)
+  // scene.add(light1)
+  // const light2 = new THREE.AmbientLight(0xffffff, 0.2)
+  // scene.add(light2)
 }
 
 let geometry, baseColorMap, displacementMap, metalnessMap, normalMap, roughnessMap, aoMap, material
@@ -164,10 +175,40 @@ const renderSphere = () => {
     aoMap,
   })
 
+  // material = new THREE.MeshBasicMaterial()
+
   sphere = new THREE.Mesh(geometry, material)
   sphere.material.map.repeat.set(scaleSize.value, scaleSize.value)
 
   scene.add(sphere)
+}
+
+const selectedBackground = ref('sample_background_01')
+const backgroundOptions = [
+  { name: 'sample_background_01', src: sample_background_01 },
+  { name: 'sample_background_02', src: sample_background_02 },
+  { name: 'sample_background_03', src: sample_background_03 },
+  { name: 'sample_background_04', src: sample_background_04 },
+]
+
+let textureEquirec
+
+watch(
+  () => selectedBackground.value,
+  () => {
+    renderBackground()
+  }
+)
+
+const renderBackground = () => {
+  const textureLoader = new THREE.TextureLoader()
+
+  textureEquirec = textureLoader.load(backgroundOptions.find(({ name }) => name === selectedBackground.value).src)
+  textureEquirec.mapping = THREE.EquirectangularReflectionMapping
+  textureEquirec.encoding = THREE.sRGBEncoding
+
+  scene.background = textureEquirec
+  material.envMap = textureEquirec
 }
 
 const removeSphere = () => {
@@ -227,8 +268,9 @@ const animate = function () {
 
 onMounted(() => {
   init()
-  render()
+  renderLight()
   renderSphere()
+  renderBackground()
   animate()
 })
 
@@ -259,12 +301,22 @@ onUnmounted(() => {
     display: grid;
     grid-template-columns: repeat(5, 240px);
     column-gap: 10px;
+    row-gap: 20px;
+
+    > button {
+      border: 1px solid black;
+    }
   }
 
   .control {
     width: 100%;
     display: flex;
     flex-direction: column;
+    row-gap: 10px;
+
+    > span {
+      font-size: 18px;
+    }
   }
 
   .re-render-button {
