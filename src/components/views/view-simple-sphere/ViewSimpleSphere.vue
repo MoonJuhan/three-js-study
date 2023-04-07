@@ -5,77 +5,23 @@ Can you understand the code below?
     <h1>Simple Sphere</h1>
     <RouterLink to="/">Home</RouterLink>
 
-    <div class="controls">
-      <AppSlider
-        :currentValue="cameraZoom"
-        @update-current-value="setCameraZoom"
-        :minNumber="0"
-        :maxNumber="10"
-        label="Camera Zoom"
-      />
-      <AppSlider
-        :currentValue="heightScale"
-        @update-current-value="setHeightScale"
-        :minNumber="0"
-        :maxNumber="0.5"
-        :fixedPoint="2"
-        label="Height Scale"
-      />
-      <AppSlider
-        :currentValue="roughness"
-        @update-current-value="setRoughness"
-        :minNumber="0"
-        :maxNumber="1"
-        :fixedPoint="1"
-        label="Roughness"
-      />
-      <AppSlider
-        :currentValue="normalScaleVector01"
-        @update-current-value="setNormalScaleVector01"
-        :minNumber="0"
-        :maxNumber="1"
-        :fixedPoint="1"
-        label="normalScaleVector01"
-      />
-      <AppSlider
-        :currentValue="normalScaleVector02"
-        @update-current-value="setNormalScaleVector02"
-        :minNumber="0"
-        :maxNumber="1"
-        :fixedPoint="1"
-        label="normalScaleVector02"
-      />
-      <AppSlider
-        :currentValue="scaleSize"
-        @update-current-value="setScaleSize"
-        :minNumber="0"
-        :maxNumber="2"
-        :fixedPoint="2"
-        label="Scale Size"
-      />
-      <div class="control">
-        <span>HDRI Background</span>
-
-        <select v-model="selectedBackground">
-          <option v-for="name in backgroundOptions.map(({ name }) => name)" :key="name" :value="name">
-            {{ name }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <div class="controls">
-      <button @click="onClickRemove()" class="re-render-button">Remove</button>
-      <button @click="onClickReRender()" class="re-render-button">Re Render</button>
-      <button @click="isRotate = !isRotate" class="re-render-button">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
-    </div>
+    <SimpleSphereControls
+      @re-render-sphere="reRenderSphere"
+      @re-render-background="renderBackground"
+      :isRotate="isRotate"
+      @change-is-rotate="
+        () => {
+          isRotate = !isRotate
+        }
+      "
+    />
 
     <div ref="refThdViewer" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
 import { RouterLink } from 'vue-router'
 import sample_base from '@/assets/sample-6-type-map/sample-base.png'
@@ -85,43 +31,11 @@ import sample_mtl from '@/assets/sample-6-type-map/sample-mtl.png'
 import sample_normal from '@/assets/sample-6-type-map/sample-normal.png'
 import sample_rough from '@/assets/sample-6-type-map/sample-rough.png'
 import sample_background_01 from '@/assets/sample-hdri-background/sample-hdri-background-01.png'
-import sample_background_02 from '@/assets/sample-hdri-background/sample-hdri-background-02.png'
-import sample_background_03 from '@/assets/sample-hdri-background/sample-hdri-background-03.png'
-import sample_background_04 from '@/assets/sample-hdri-background/sample-hdri-background-04.png'
-import AppSlider from '@/components/app/AppSlider.vue'
+import SimpleSphereControls from './SimpleSphereControls'
 
 let camera, scene, renderer, sphere
 
 const refThdViewer = ref()
-
-const cameraZoom = ref(3)
-const setCameraZoom = (value) => {
-  cameraZoom.value = value
-}
-const heightScale = ref(0.01)
-const setHeightScale = (value) => {
-  heightScale.value = value
-}
-
-const roughness = ref(0.3)
-const setRoughness = (value) => {
-  roughness.value = value
-}
-
-const normalScaleVector01 = ref(1)
-const setNormalScaleVector01 = (value) => {
-  normalScaleVector01.value = value
-}
-
-const normalScaleVector02 = ref(1)
-const setNormalScaleVector02 = (value) => {
-  normalScaleVector02.value = value
-}
-
-const scaleSize = ref(1)
-const setScaleSize = (value) => {
-  scaleSize.value = value
-}
 
 const init = () => {
   const container = document.createElement('div')
@@ -136,6 +50,23 @@ const init = () => {
   renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(window.innerWidth, window.innerHeight)
   container.appendChild(renderer.domElement)
+
+  loadGeometryAndTexture()
+  renderLight()
+  renderSphere()
+  renderBackground()
+}
+
+const loadGeometryAndTexture = async () => {
+  geometry = new THREE.SphereGeometry(1, 64, 64)
+
+  const loader = new THREE.TextureLoader()
+  baseColorMap = loader.load(sample_base)
+  displacementMap = loader.load(sample_disp)
+  metalnessMap = loader.load(sample_mtl)
+  normalMap = loader.load(sample_normal)
+  roughnessMap = loader.load(sample_rough)
+  aoMap = loader.load(sample_lt)
 }
 
 const renderLight = () => {
@@ -151,65 +82,6 @@ const renderLight = () => {
 }
 
 let geometry, baseColorMap, displacementMap, metalnessMap, normalMap, roughnessMap, aoMap, material
-
-const renderSphere = () => {
-  geometry = new THREE.SphereGeometry(1, 64, 64)
-
-  const loader = new THREE.TextureLoader()
-  baseColorMap = loader.load(sample_base)
-  displacementMap = loader.load(sample_disp)
-  metalnessMap = loader.load(sample_mtl)
-  normalMap = loader.load(sample_normal)
-  roughnessMap = loader.load(sample_rough)
-  aoMap = loader.load(sample_lt)
-
-  material = new THREE.MeshStandardMaterial({
-    map: baseColorMap,
-    displacementMap,
-    displacementScale: heightScale.value,
-    metalnessMap,
-    normalMap,
-    normalScale: new THREE.Vector2(normalScaleVector01.value, normalScaleVector02.value),
-    roughnessMap,
-    roughness: roughness.value,
-    aoMap,
-  })
-
-  // material = new THREE.MeshBasicMaterial()
-
-  sphere = new THREE.Mesh(geometry, material)
-  sphere.material.map.repeat.set(scaleSize.value, scaleSize.value)
-
-  scene.add(sphere)
-}
-
-const selectedBackground = ref('sample_background_01')
-const backgroundOptions = [
-  { name: 'sample_background_01', src: sample_background_01 },
-  { name: 'sample_background_02', src: sample_background_02 },
-  { name: 'sample_background_03', src: sample_background_03 },
-  { name: 'sample_background_04', src: sample_background_04 },
-]
-
-let textureEquirec
-
-watch(
-  () => selectedBackground.value,
-  () => {
-    renderBackground()
-  }
-)
-
-const renderBackground = () => {
-  const textureLoader = new THREE.TextureLoader()
-
-  textureEquirec = textureLoader.load(backgroundOptions.find(({ name }) => name === selectedBackground.value).src)
-  textureEquirec.mapping = THREE.EquirectangularReflectionMapping
-  textureEquirec.encoding = THREE.sRGBEncoding
-
-  scene.background = textureEquirec
-  material.envMap = textureEquirec
-}
 
 const removeSphere = () => {
   scene.remove(sphere)
@@ -227,28 +99,54 @@ const removeSphere = () => {
   renderer.info.reset()
 }
 
-const onClickReRender = () => {
-  removeSphere()
-  camera.position.z = cameraZoom.value
-  renderSphere()
+const renderSphere = (
+  options = {
+    heightScale: 0.01,
+    roughness: 0.3,
+    normalScaleVector01: 1,
+    normalScaleVector02: 1,
+    scaleSize: 1,
+  }
+) => {
+  const { heightScale, normalScaleVector01, normalScaleVector02, roughness, scaleSize } = options
+
+  material = new THREE.MeshStandardMaterial({
+    map: baseColorMap,
+    displacementMap,
+    displacementScale: heightScale,
+    metalnessMap,
+    normalMap,
+    normalScale: new THREE.Vector2(normalScaleVector01, normalScaleVector02),
+    roughnessMap,
+    roughness: roughness,
+    aoMap,
+  })
+
+  if (textureEquirec) material.envMap = textureEquirec
+
+  sphere = new THREE.Mesh(geometry, material)
+  sphere.material.map.repeat.set(scaleSize, scaleSize)
+
+  scene.add(sphere)
 }
 
-watch(
-  () => [
-    cameraZoom.value,
-    heightScale.value,
-    roughness.value,
-    normalScaleVector01.value,
-    normalScaleVector02.value,
-    scaleSize.value,
-  ],
-  () => {
-    onClickReRender()
-  }
-)
-
-const onClickRemove = () => {
+const reRenderSphere = (options) => {
   removeSphere()
+  camera.position.z = options.cameraZoom
+  renderSphere(options)
+}
+
+let textureEquirec
+
+const renderBackground = (src = sample_background_01) => {
+  const textureLoader = new THREE.TextureLoader()
+
+  textureEquirec = textureLoader.load(src)
+  textureEquirec.mapping = THREE.EquirectangularReflectionMapping
+  textureEquirec.encoding = THREE.sRGBEncoding
+
+  scene.background = textureEquirec
+  material.envMap = textureEquirec
 }
 
 const animation = ref()
@@ -268,9 +166,6 @@ const animate = function () {
 
 onMounted(() => {
   init()
-  renderLight()
-  renderSphere()
-  renderBackground()
   animate()
 })
 
