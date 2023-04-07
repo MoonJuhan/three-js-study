@@ -2,9 +2,9 @@
   <div class="app-slider">
     <span v-if="label" class="label">{{ label }} : {{ currentValue }}</span>
 
-    <div class="slider-bar" ref="refSliderBar">
+    <div class="slider-bar" ref="refSliderBar" @mousedown="onMouseDownSilderCircle()">
       <div class="progress-bar" :style="progressBarStyle" />
-      <div class="slider-circle" :style="sliderCircleStyle" @mousedown="onMouseDownSilderCircle()" />
+      <div class="slider-circle" :style="sliderCircleStyle" />
     </div>
   </div>
 </template>
@@ -122,6 +122,7 @@ watch(
     height: 5px;
     background-color: #ccc;
     border-radius: 5px;
+    cursor: pointer;
   }
 
   .progress-bar {
