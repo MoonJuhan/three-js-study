@@ -62,7 +62,11 @@ const init = () => {
 }
 
 const loadGeometryAndTexture = async () => {
+  // Sphere Geometry
   geometry = new THREE.SphereGeometry(1, 64, 64)
+
+  // Box Geometry
+  // geometry = new THREE.BoxGeometry(1, 1, 1)
 
   const loader = new THREE.TextureLoader()
   baseColorMap = loader.load(sample_base)
@@ -110,6 +114,7 @@ const renderSphere = (
     normalScaleVector01: 1,
     normalScaleVector02: 1,
     scaleSize: 1,
+    envMapIntensity: 5,
   }
 ) => {
   const { heightScale, normalScaleVector01, normalScaleVector02, roughness, scaleSize, envMapIntensity } = options
@@ -132,6 +137,8 @@ const renderSphere = (
   }
 
   sphere = new THREE.Mesh(geometry, material)
+  sphere.material.map.wrapS = THREE.RepeatWrapping
+  sphere.material.map.wrapT = THREE.RepeatWrapping
   sphere.material.map.repeat.set(scaleSize, scaleSize)
 
   scene.add(sphere)
@@ -154,15 +161,6 @@ const renderBackground = (src = sample_background_01) => {
   scene.background = textureEquirec
   material.envMap = textureEquirec
   material.envMapIntensity = 5
-
-  // const hdrUrls = [px, nx, py, ny, pz, nz]
-  // const hdrCubeMap = new HDRCubeTextureLoader().load(hdrUrls, function () {
-  //   console.log(hdrCubeMap)
-  //   // hdrCubeRenderTarget = pmremGenerator.fromCubemap(hdrCubeMap)
-
-  //   // hdrCubeMap.magFilter = THREE.LinearFilter
-  //   // hdrCubeMap.needsUpdate = true
-  // })
 }
 
 const animation = ref()
