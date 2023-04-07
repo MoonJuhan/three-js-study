@@ -70,11 +70,28 @@ const loadGeometryAndTexture = async () => {
 
   const loader = new THREE.TextureLoader()
   baseColorMap = loader.load(sample_base)
+  baseColorMap.wrapS = THREE.RepeatWrapping
+  baseColorMap.wrapT = THREE.RepeatWrapping
+
   displacementMap = loader.load(sample_disp)
+  displacementMap.wrapS = THREE.RepeatWrapping
+  displacementMap.wrapT = THREE.RepeatWrapping
+
   metalnessMap = loader.load(sample_mtl)
+  metalnessMap.wrapS = THREE.RepeatWrapping
+  metalnessMap.wrapT = THREE.RepeatWrapping
+
   normalMap = loader.load(sample_normal)
+  normalMap.wrapS = THREE.RepeatWrapping
+  normalMap.wrapT = THREE.RepeatWrapping
+
   roughnessMap = loader.load(sample_rough)
+  roughnessMap.wrapS = THREE.RepeatWrapping
+  roughnessMap.wrapT = THREE.RepeatWrapping
+
   aoMap = loader.load(sample_lt)
+  aoMap.wrapS = THREE.RepeatWrapping
+  aoMap.wrapT = THREE.RepeatWrapping
 }
 
 const renderLight = () => {
@@ -136,10 +153,14 @@ const renderSphere = (
     material.envMapIntensity = envMapIntensity || 5
   }
 
+  material.map.repeat.set(scaleSize, scaleSize)
+  material.displacementMap.repeat.set(scaleSize, scaleSize)
+  material.metalnessMap.repeat.set(scaleSize, scaleSize)
+  material.normalMap.repeat.set(scaleSize, scaleSize)
+  material.roughnessMap.repeat.set(scaleSize, scaleSize)
+  material.aoMap.repeat.set(scaleSize, scaleSize)
+
   sphere = new THREE.Mesh(geometry, material)
-  sphere.material.map.wrapS = THREE.RepeatWrapping
-  sphere.material.map.wrapT = THREE.RepeatWrapping
-  sphere.material.map.repeat.set(scaleSize, scaleSize)
 
   scene.add(sphere)
 }
