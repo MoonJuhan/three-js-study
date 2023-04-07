@@ -23,6 +23,7 @@ Can you understand the code below?
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
+import { OrbitControls } from '@/helpers/OrbitControls'
 import { RouterLink } from 'vue-router'
 import sample_base from '@/assets/sample-6-type-map/sample-base.png'
 import sample_disp from '@/assets/sample-6-type-map/sample-disp.png'
@@ -50,6 +51,8 @@ const init = () => {
   renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(window.innerWidth, window.innerHeight)
   container.appendChild(renderer.domElement)
+
+  new OrbitControls(camera, renderer.domElement)
 
   loadGeometryAndTexture()
   renderLight()
@@ -120,10 +123,12 @@ const renderSphere = (
     roughnessMap,
     roughness,
     aoMap,
-    envMapIntensity,
   })
 
-  if (textureEquirec) material.envMap = textureEquirec
+  if (textureEquirec) {
+    material.envMap = textureEquirec
+    material.envMapIntensity = envMapIntensity || 5
+  }
 
   sphere = new THREE.Mesh(geometry, material)
   sphere.material.map.repeat.set(scaleSize, scaleSize)
@@ -133,7 +138,6 @@ const renderSphere = (
 
 const reRenderSphere = (options) => {
   removeSphere()
-  camera.position.z = options.cameraZoom
   renderSphere(options)
 }
 
@@ -148,6 +152,7 @@ const renderBackground = (src = sample_background_01) => {
 
   scene.background = textureEquirec
   material.envMap = textureEquirec
+  material.envMapIntensity = 5
 }
 
 const animation = ref()

@@ -1,14 +1,7 @@
 <template>
   <div class="simple-sphere-controls">
-    <span class="controls-label">Camera And Animation Controls</span>
+    <span class="controls-label">Rotate Animation Controls</span>
     <div class="controls">
-      <AppSlider
-        :currentValue="cameraZoom"
-        @update-current-value="setCameraZoom"
-        :minNumber="0"
-        :maxNumber="10"
-        label="Camera Zoom"
-      />
       <button @click="emit('change-is-rotate')">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
     </div>
 
@@ -94,10 +87,6 @@ const props = defineProps({
   isRotate: Boolean,
 })
 
-const cameraZoom = ref(3)
-const setCameraZoom = (value) => {
-  cameraZoom.value = value
-}
 const heightScale = ref(0.01)
 const setHeightScale = (value) => {
   heightScale.value = value
@@ -123,7 +112,7 @@ const setScaleSize = (value) => {
   scaleSize.value = value
 }
 
-const envMapIntensity = ref(1)
+const envMapIntensity = ref(5)
 const setEnvMapIntensity = (value) => {
   envMapIntensity.value = value
 }
@@ -138,7 +127,6 @@ const backgroundOptions = [
 
 watch(
   () => [
-    cameraZoom.value,
     heightScale.value,
     roughness.value,
     normalScaleVector01.value,
@@ -148,7 +136,6 @@ watch(
   ],
   () => {
     emit('re-render-sphere', {
-      cameraZoom: cameraZoom.value,
       heightScale: heightScale.value,
       roughness: roughness.value,
       normalScaleVector01: normalScaleVector01.value,
