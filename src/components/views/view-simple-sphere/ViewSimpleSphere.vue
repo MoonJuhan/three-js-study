@@ -75,7 +75,7 @@ import sample_lt from '@/assets/sample-6-type-map/sample-lt.png'
 import sample_mtl from '@/assets/sample-6-type-map/sample-mtl.png'
 import sample_normal from '@/assets/sample-6-type-map/sample-normal.png'
 import sample_rough from '@/assets/sample-6-type-map/sample-rough.png'
-import AppSlider from './AppSlider.vue'
+import AppSlider from '@/components/app/AppSlider.vue'
 
 let camera, scene, renderer, sphere
 
