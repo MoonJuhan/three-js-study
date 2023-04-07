@@ -24,14 +24,11 @@ Can you understand the code below?
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from '@/helpers/OrbitControls'
-import { HDRCubeTextureLoader } from 'three/examples/jsm/loaders/HDRCubeTextureLoader.js'
 import { RouterLink } from 'vue-router'
-import sample_base from '@/assets/sample-6-type-map/sample-base.png'
-import sample_disp from '@/assets/sample-6-type-map/sample-disp.png'
-import sample_lt from '@/assets/sample-6-type-map/sample-lt.png'
-import sample_mtl from '@/assets/sample-6-type-map/sample-mtl.png'
-import sample_normal from '@/assets/sample-6-type-map/sample-normal.png'
-import sample_rough from '@/assets/sample-6-type-map/sample-rough.png'
+import sample_base from '@/assets/sample-6-type-map/sample-base.jpg'
+import sample_disp from '@/assets/sample-6-type-map/sample-disp.jpg'
+import sample_normal from '@/assets/sample-6-type-map/sample-normal.jpg'
+import sample_rough from '@/assets/sample-6-type-map/sample-rough.jpg'
 import sample_background_01 from '@/assets/sample-hdri-background/sample-hdri-background-01.png'
 import SimpleSphereControls from './SimpleSphereControls'
 
@@ -77,10 +74,6 @@ const loadGeometryAndTexture = async () => {
   displacementMap.wrapS = THREE.RepeatWrapping
   displacementMap.wrapT = THREE.RepeatWrapping
 
-  metalnessMap = loader.load(sample_mtl)
-  metalnessMap.wrapS = THREE.RepeatWrapping
-  metalnessMap.wrapT = THREE.RepeatWrapping
-
   normalMap = loader.load(sample_normal)
   normalMap.wrapS = THREE.RepeatWrapping
   normalMap.wrapT = THREE.RepeatWrapping
@@ -88,10 +81,6 @@ const loadGeometryAndTexture = async () => {
   roughnessMap = loader.load(sample_rough)
   roughnessMap.wrapS = THREE.RepeatWrapping
   roughnessMap.wrapT = THREE.RepeatWrapping
-
-  aoMap = loader.load(sample_lt)
-  aoMap.wrapS = THREE.RepeatWrapping
-  aoMap.wrapT = THREE.RepeatWrapping
 }
 
 const renderLight = () => {
@@ -106,7 +95,7 @@ const renderLight = () => {
   // scene.add(light2)
 }
 
-let geometry, baseColorMap, displacementMap, metalnessMap, normalMap, roughnessMap, aoMap, material
+let geometry, baseColorMap, displacementMap, normalMap, roughnessMap, material
 
 const removeSphere = () => {
   scene.remove(sphere)
@@ -115,10 +104,8 @@ const removeSphere = () => {
 
   baseColorMap.dispose()
   displacementMap.dispose()
-  metalnessMap.dispose()
   normalMap.dispose()
   roughnessMap.dispose()
-  aoMap.dispose()
   material.dispose()
 
   renderer.info.reset()
@@ -140,12 +127,10 @@ const renderSphere = (
     map: baseColorMap,
     displacementMap,
     displacementScale: heightScale,
-    metalnessMap,
     normalMap,
     normalScale: new THREE.Vector2(normalScaleVector01, normalScaleVector02),
     roughnessMap,
     roughness,
-    aoMap,
   })
 
   if (textureEquirec) {
@@ -155,10 +140,8 @@ const renderSphere = (
 
   material.map.repeat.set(scaleSize, scaleSize)
   material.displacementMap.repeat.set(scaleSize, scaleSize)
-  material.metalnessMap.repeat.set(scaleSize, scaleSize)
   material.normalMap.repeat.set(scaleSize, scaleSize)
   material.roughnessMap.repeat.set(scaleSize, scaleSize)
-  material.aoMap.repeat.set(scaleSize, scaleSize)
 
   sphere = new THREE.Mesh(geometry, material)
 
