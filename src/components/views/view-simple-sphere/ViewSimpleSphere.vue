@@ -24,6 +24,7 @@ Can you understand the code below?
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from '@/helpers/OrbitControls'
+import { HDRCubeTextureLoader } from 'three/examples/jsm/loaders/HDRCubeTextureLoader.js'
 import { RouterLink } from 'vue-router'
 import sample_base from '@/assets/sample-6-type-map/sample-base.png'
 import sample_disp from '@/assets/sample-6-type-map/sample-disp.png'
@@ -43,13 +44,13 @@ const init = () => {
   refThdViewer.value.appendChild(container)
 
   scene = new THREE.Scene()
-  scene.background = new THREE.Color(0xffffff)
 
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 100000)
   camera.position.z = 3
 
   renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.outputEncoding = THREE.sRGBEncoding
   container.appendChild(renderer.domElement)
 
   new OrbitControls(camera, renderer.domElement)
@@ -153,6 +154,15 @@ const renderBackground = (src = sample_background_01) => {
   scene.background = textureEquirec
   material.envMap = textureEquirec
   material.envMapIntensity = 5
+
+  // const hdrUrls = [px, nx, py, ny, pz, nz]
+  // const hdrCubeMap = new HDRCubeTextureLoader().load(hdrUrls, function () {
+  //   console.log(hdrCubeMap)
+  //   // hdrCubeRenderTarget = pmremGenerator.fromCubemap(hdrCubeMap)
+
+  //   // hdrCubeMap.magFilter = THREE.LinearFilter
+  //   // hdrCubeMap.needsUpdate = true
+  // })
 }
 
 const animation = ref()
