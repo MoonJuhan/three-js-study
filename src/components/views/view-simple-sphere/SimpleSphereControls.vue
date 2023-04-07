@@ -5,6 +5,19 @@
       <button @click="emit('change-is-rotate')">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
     </div>
 
+    <span class="controls-label">Geometry Controls</span>
+    <div class="controls">
+      <div class="control">
+        <span>Segments</span>
+
+        <select v-model="selectedSegments">
+          <option v-for="name in segmentsOptions.map(({ name }) => name)" :key="name" :value="name">
+            {{ name }}
+          </option>
+        </select>
+      </div>
+    </div>
+
     <span class="controls-label">Map Controls</span>
     <div class="controls">
       <AppSlider
@@ -83,7 +96,13 @@ import sample_background_04 from '@/assets/sample-hdri-background/sample-hdri-ba
 import sample_background_05 from '@/assets/sample-hdri-background/sample-hdri-background-05.jpg'
 import sample_background_06 from '@/assets/sample-hdri-background/sample-hdri-background-06.jpg'
 
-const emit = defineEmits(['set-options', 're-render-sphere', 're-render-background', 'change-is-rotate'])
+const emit = defineEmits([
+  'set-options',
+  're-render-geometry',
+  're-render-sphere',
+  're-render-background',
+  'change-is-rotate',
+])
 
 const props = defineProps({
   isRotate: Boolean,
@@ -154,6 +173,22 @@ watch(
   () => selectedBackground.value,
   () => {
     emit('re-render-background', backgroundOptions.find(({ name }) => name === selectedBackground.value).src)
+  }
+)
+
+const selectedSegments = ref('64')
+const segmentsOptions = [
+  { name: '64', value: 64 },
+  { name: '128', value: 128 },
+  { name: '256', value: 256 },
+  { name: '512', value: 512 },
+  { name: '1024', value: 1024 },
+]
+
+watch(
+  () => selectedSegments.value,
+  () => {
+    emit('re-render-geometry', { segments: segmentsOptions.find(({ name }) => name === selectedSegments.value).value })
   }
 )
 </script>

@@ -6,6 +6,7 @@ Can you understand the code below?
     <RouterLink to="/">Home</RouterLink>
 
     <SimpleSphereControls
+      @re-render-geometry="reRenderGeometry"
       @re-render-sphere="reRenderSphere"
       @re-render-background="renderBackground"
       :isRotate="isRotate"
@@ -81,6 +82,16 @@ const loadGeometryAndTexture = async () => {
   roughnessMap = loader.load(sample_rough)
   roughnessMap.wrapS = THREE.RepeatWrapping
   roughnessMap.wrapT = THREE.RepeatWrapping
+}
+
+const reRenderGeometry = ({ segments }) => {
+  scene.remove(sphere)
+  geometry.dispose()
+
+  geometry = new THREE.SphereGeometry(1, segments, segments)
+  sphere = new THREE.Mesh(geometry, material)
+
+  scene.add(sphere)
 }
 
 const renderLight = () => {
