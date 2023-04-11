@@ -39,7 +39,7 @@
       <AppSlider
         :currentValue="normalScaleVector01"
         @update-current-value="setNormalScaleVector01"
-        :minNumber="0"
+        :minNumber="-1"
         :maxNumber="1"
         :fixedPoint="1"
         label="normalScaleVector01"
@@ -47,7 +47,7 @@
       <AppSlider
         :currentValue="normalScaleVector02"
         @update-current-value="setNormalScaleVector02"
-        :minNumber="0"
+        :minNumber="-1"
         :maxNumber="1"
         :fixedPoint="1"
         label="normalScaleVector02"
