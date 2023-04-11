@@ -130,29 +130,54 @@ const renderSphere = (
     normalScaleVector02: 1,
     scaleSize: 1,
     envMapIntensity: 5,
+    isUseMap: true,
+    isUseDisplacementMap: true,
+    isUseNormalMap: true,
+    isUseRoughnessMap: true,
   }
 ) => {
-  const { heightScale, normalScaleVector01, normalScaleVector02, roughness, scaleSize, envMapIntensity } = options
-
-  material = new THREE.MeshStandardMaterial({
-    map: baseColorMap,
-    displacementMap,
-    displacementScale: heightScale,
-    normalMap,
-    normalScale: new THREE.Vector2(normalScaleVector01, normalScaleVector02),
-    roughnessMap,
+  const {
+    heightScale,
+    normalScaleVector01,
+    normalScaleVector02,
     roughness,
-  })
+    scaleSize,
+    envMapIntensity,
+    isUseMap,
+    isUseDisplacementMap,
+    isUseNormalMap,
+    isUseRoughnessMap,
+  } = options
+
+  material = new THREE.MeshStandardMaterial()
+
+  if (isUseMap) {
+    material.map = baseColorMap
+    material.map.repeat.set(scaleSize, scaleSize)
+  }
+
+  if (isUseDisplacementMap) {
+    material.displacementMap = displacementMap
+    material.displacementMap.repeat.set(scaleSize, scaleSize)
+    material.displacementScale = heightScale
+  }
+
+  if (isUseNormalMap) {
+    material.normalMap = normalMap
+    material.normalMap.repeat.set(scaleSize, scaleSize)
+    material.normalScale = new THREE.Vector2(normalScaleVector01, normalScaleVector02)
+  }
+
+  if (isUseRoughnessMap) {
+    material.roughnessMap = roughnessMap
+    material.roughnessMap.repeat.set(scaleSize, scaleSize)
+    material.roughness = roughness
+  }
 
   if (textureEquirec) {
     material.envMap = textureEquirec
     material.envMapIntensity = envMapIntensity || 5
   }
-
-  material.map.repeat.set(scaleSize, scaleSize)
-  material.displacementMap.repeat.set(scaleSize, scaleSize)
-  material.normalMap.repeat.set(scaleSize, scaleSize)
-  material.roughnessMap.repeat.set(scaleSize, scaleSize)
 
   sphere = new THREE.Mesh(geometry, material)
 

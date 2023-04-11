@@ -61,6 +61,24 @@
         label="Scale Size"
       />
     </div>
+    <div class="controls">
+      <div class="control">
+        <span>Map On / Off</span>
+        <input type="checkbox" v-model="isUseMap" />
+      </div>
+      <div class="control">
+        <span>Displacement Map On / Off</span>
+        <input type="checkbox" v-model="isUseDisplacementMap" />
+      </div>
+      <div class="control">
+        <span>Normal Map On / Off</span>
+        <input type="checkbox" v-model="isUseNormalMap" />
+      </div>
+      <div class="control">
+        <span>Roughness Map On / Off</span>
+        <input type="checkbox" v-model="isUseRoughnessMap" />
+      </div>
+    </div>
 
     <span class="controls-label">Background Controls</span>
     <div class="controls">
@@ -138,6 +156,11 @@ const setEnvMapIntensity = (value) => {
   envMapIntensity.value = value
 }
 
+const isUseMap = ref(true)
+const isUseDisplacementMap = ref(true)
+const isUseNormalMap = ref(true)
+const isUseRoughnessMap = ref(true)
+
 const selectedBackground = ref('sample_background_01')
 const backgroundOptions = [
   { name: 'sample_background_01', src: sample_background_01 },
@@ -156,6 +179,10 @@ watch(
     normalScaleVector02.value,
     scaleSize.value,
     envMapIntensity.value,
+    isUseMap.value,
+    isUseDisplacementMap.value,
+    isUseNormalMap.value,
+    isUseRoughnessMap.value,
   ],
   () => {
     emit('re-render-sphere', {
@@ -165,6 +192,10 @@ watch(
       normalScaleVector02: normalScaleVector02.value,
       scaleSize: scaleSize.value,
       envMapIntensity: envMapIntensity.value,
+      isUseMap: isUseMap.value,
+      isUseDisplacementMap: isUseDisplacementMap.value,
+      isUseNormalMap: isUseNormalMap.value,
+      isUseRoughnessMap: isUseRoughnessMap.value,
     })
   }
 )
