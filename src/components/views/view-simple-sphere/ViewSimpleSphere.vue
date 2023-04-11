@@ -49,6 +49,8 @@ const init = () => {
   renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.outputEncoding = THREE.sRGBEncoding
+  renderer.physicallyCorrectLights = true
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
   container.appendChild(renderer.domElement)
 
   new OrbitControls(camera, renderer.domElement)
@@ -134,6 +136,7 @@ const renderSphere = (
     isUseDisplacementMap: true,
     isUseNormalMap: true,
     isUseRoughnessMap: true,
+    toneMappingExpose: 1,
   }
 ) => {
   const {
@@ -147,6 +150,7 @@ const renderSphere = (
     isUseDisplacementMap,
     isUseNormalMap,
     isUseRoughnessMap,
+    toneMappingExpose,
   } = options
 
   material = new THREE.MeshStandardMaterial()
@@ -180,6 +184,7 @@ const renderSphere = (
   }
 
   sphere = new THREE.Mesh(geometry, material)
+  renderer.toneMappingExposure = toneMappingExpose
 
   scene.add(sphere)
 }

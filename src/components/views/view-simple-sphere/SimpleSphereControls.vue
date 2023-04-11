@@ -100,6 +100,15 @@
         :fixedPoint="0"
         label="Env Map Intensity"
       />
+
+      <AppSlider
+        :currentValue="toneMappingExpose"
+        @update-current-value="setToneMappingExpose"
+        :minNumber="0"
+        :maxNumber="2"
+        :fixedPoint="1"
+        label="Tone Mapping Exposure"
+      />
     </div>
   </div>
 </template>
@@ -171,6 +180,11 @@ const backgroundOptions = [
   { name: 'sample_background_06', src: sample_background_06 },
 ]
 
+const toneMappingExpose = ref(1)
+const setToneMappingExpose = (value) => {
+  toneMappingExpose.value = value
+}
+
 watch(
   () => [
     heightScale.value,
@@ -183,6 +197,7 @@ watch(
     isUseDisplacementMap.value,
     isUseNormalMap.value,
     isUseRoughnessMap.value,
+    toneMappingExpose.value,
   ],
   () => {
     emit('re-render-sphere', {
@@ -196,6 +211,7 @@ watch(
       isUseDisplacementMap: isUseDisplacementMap.value,
       isUseNormalMap: isUseNormalMap.value,
       isUseRoughnessMap: isUseRoughnessMap.value,
+      toneMappingExpose: toneMappingExpose.value,
     })
   }
 )
