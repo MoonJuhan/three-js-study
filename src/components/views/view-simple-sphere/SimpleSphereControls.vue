@@ -1,12 +1,36 @@
 <template>
   <div class="simple-sphere-controls">
-    <span class="controls-label">Rotate Animation Controls</span>
-    <div class="controls">
+    <div class="controls-header">
+      <span class="controls-label">Rotate Animation Controls</span>
+      <button
+        @click="
+          () => {
+            isFolded[0] = !isFolded[0]
+          }
+        "
+      >
+        {{ isFolded[0] ? 'Open' : 'Fold' }}
+      </button>
+    </div>
+
+    <div v-if="!isFolded[0]" class="controls">
       <button @click="emit('change-is-rotate')">Rotate {{ !isRotate ? 'On' : 'Off' }}</button>
     </div>
 
-    <span class="controls-label">Geometry Controls</span>
-    <div class="controls">
+    <div class="controls-header">
+      <span class="controls-label">Geometry Controls</span>
+      <button
+        @click="
+          () => {
+            isFolded[1] = !isFolded[1]
+          }
+        "
+      >
+        {{ isFolded[1] ? 'Open' : 'Fold' }}
+      </button>
+    </div>
+
+    <div v-if="!isFolded[1]" class="controls">
       <div class="control">
         <span>Segments</span>
 
@@ -18,8 +42,20 @@
       </div>
     </div>
 
-    <span class="controls-label">Map Controls</span>
-    <div class="controls">
+    <div class="controls-header">
+      <span class="controls-label">Map Controls</span>
+      <button
+        @click="
+          () => {
+            isFolded[2] = !isFolded[2]
+          }
+        "
+      >
+        {{ isFolded[2] ? 'Open' : 'Fold' }}
+      </button>
+    </div>
+
+    <div v-if="!isFolded[2]" class="controls">
       <AppSlider
         :currentValue="heightScale"
         @update-current-value="setHeightScale"
@@ -61,7 +97,7 @@
         label="Scale Size"
       />
     </div>
-    <div class="controls">
+    <div v-if="!isFolded[2]" class="controls">
       <div class="control">
         <span>Map On / Off</span>
         <input type="checkbox" v-model="isUseMap" />
@@ -80,8 +116,20 @@
       </div>
     </div>
 
-    <span class="controls-label">Background Controls</span>
-    <div class="controls">
+    <div class="controls-header">
+      <span class="controls-label">Background Controls</span>
+      <button
+        @click="
+          () => {
+            isFolded[3] = !isFolded[3]
+          }
+        "
+      >
+        {{ isFolded[3] ? 'Open' : 'Fold' }}
+      </button>
+    </div>
+
+    <div v-if="!isFolded[3]" class="controls">
       <div class="control">
         <span>HDRI Background</span>
 
@@ -238,6 +286,8 @@ watch(
     emit('re-render-geometry', { segments: segmentsOptions.find(({ name }) => name === selectedSegments.value).value })
   }
 )
+
+const isFolded = ref([false, false, false, false])
 </script>
 
 <style lang="scss" scoped>
@@ -246,10 +296,16 @@ watch(
   flex-direction: column;
   row-gap: 40px;
 
+  .controls-header {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+    margin-bottom: -32px;
+  }
+
   .controls-label {
     font-weight: 500;
     font-size: 20px;
-    margin-bottom: -32px;
   }
 
   .controls {
