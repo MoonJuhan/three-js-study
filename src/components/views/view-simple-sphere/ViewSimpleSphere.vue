@@ -17,7 +17,7 @@ Can you understand the code below?
       "
     />
 
-    <div ref="refThdViewer" />
+    <div class="thd-viewer" ref="refThdViewer" />
   </div>
 </template>
 
@@ -40,14 +40,15 @@ const refThdViewer = ref()
 const init = () => {
   const container = document.createElement('div')
   refThdViewer.value.appendChild(container)
+  const { width, height } = refThdViewer.value.getBoundingClientRect()
 
   scene = new THREE.Scene()
 
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 100000)
+  camera = new THREE.PerspectiveCamera(70, width / height, 1, 100000)
   camera.position.z = 3
 
   renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.setSize(width, height)
   renderer.outputEncoding = THREE.sRGBEncoding
   renderer.physicallyCorrectLights = true
   renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -275,6 +276,11 @@ onUnmounted(() => {
 
   .re-render-button {
     font-size: 18px;
+  }
+
+  .thd-viewer {
+    width: 80%;
+    aspect-ratio: 16 / 9;
   }
 }
 </style>
