@@ -23,6 +23,10 @@ const routesBasic = [
     path: '/image-control',
     component: () => import(/* webpackChunkName: 'view-image-control' */ '../components/views/view-image-control/ViewImageControl.vue'),
   },
+  {
+    path: '/change-map-color',
+    component: () => import(/* webpackChunkName: 'view-change-map-color' */ '../components/views/view-change-map-color/ViewChangeMapColor.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)
