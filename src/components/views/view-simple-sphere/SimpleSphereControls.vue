@@ -59,7 +59,7 @@
       <AppSlider
         :currentValue="heightScale"
         @update-current-value="setHeightScale"
-        :minNumber="0"
+        :minNumber="-0.5"
         :maxNumber="0.5"
         :fixedPoint="2"
         label="Height Scale"
@@ -295,6 +295,7 @@ const isFolded = ref([false, false, false, false])
   display: flex;
   flex-direction: column;
   row-gap: 40px;
+  margin-bottom: 20px;
 
   .controls-header {
     display: flex;
