@@ -19,6 +19,10 @@ const routesBasic = [
     path: '/simple-sphere',
     component: () => import(/* webpackChunkName: 'view-simple-sphere' */ '../components/views/view-simple-sphere/ViewSimpleSphere.vue'),
   },
+  {
+    path: '/image-control',
+    component: () => import(/* webpackChunkName: 'view-image-control' */ '../components/views/view-image-control/ViewImageControl.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)
