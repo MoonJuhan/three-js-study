@@ -79,6 +79,10 @@ watch(
 onUnmounted(() => {
   document.removeEventListener('mousemove', onMouseMove)
 })
+
+defineExpose({
+  cropperBoxStyle,
+})
 </script>
 
 <style lang="scss" scoped>
@@ -87,6 +91,7 @@ onUnmounted(() => {
   position: relative;
   max-width: 600px;
   height: fit-content;
+  border: 1px solid black;
 
   img {
     z-index: -1;
