@@ -1,6 +1,9 @@
 <template>
   <div class="app-slider">
-    <span v-if="label" class="label">{{ label }} : {{ currentValue }}</span>
+    <div class="label-wrapper">
+      <span class="label">{{ label }} </span>
+      <input type="number" v-model="localValue" @input="emit('update-current-value', localValue)" />
+    </div>
 
     <div class="slider-bar" ref="refSliderBar" @mousedown="onMouseDownSilderCircle()">
       <div class="progress-bar" :style="progressBarStyle" />
@@ -10,7 +13,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const emit = defineEmits(['update-current-value'])
 
@@ -101,6 +104,18 @@ watch(
     }
   }
 )
+
+const localValue = ref(0)
+watch(
+  () => props.currentValue,
+  () => {
+    localValue.value = props.currentValue
+  }
+)
+
+onMounted(() => {
+  localValue.value = props.currentValue
+})
 </script>
 
 <style lang="scss" scoped>
@@ -109,10 +124,21 @@ watch(
   display: flex;
   flex-direction: column;
   row-gap: 10px;
-  padding: 0 8px;
+  padding: 0 8px 8px;
+  overflow: hidden;
+
+  .label-wrapper {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
+    margin: 0 -8px;
+
+    input {
+      width: 40px;
+    }
+  }
 
   .label {
-    margin: 0 -8px;
     font-size: 18px;
   }
 
