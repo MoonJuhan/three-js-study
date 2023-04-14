@@ -5,13 +5,7 @@
     <canvas ref="refCanvas" class="image-preview" />
 
     <div class="controls">
-      <button @click="onClickGetColor">Get Color</button>
-      <div>{{ sortedColors.length }} Colors Found</div>
-      <button @click="onClickShowTargetColor" :disabled="sortedColors.length === 0">Set Target Colors</button>
-      <button @click="onClickChangeColor" :disabled="sortedColors.length === 0 || targetColors.length === 0">
-        Change Color
-      </button>
-      <button @click="emit('change-map', refCanvas)">Change Map</button>
+      <button @click="onClickAddColor">Add Color</button>
     </div>
 
     <div class="controls">
@@ -31,7 +25,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import ColorThief from 'colorthief'
 
 const emit = defineEmits(['change-map'])
@@ -44,48 +38,41 @@ const props = defineProps({
 })
 
 const refCanvas = ref()
+const canvasContext = ref()
+const refImage = ref()
+const imageData = ref()
 
 const drawImage = () => {
-  const canvas = refCanvas.value
-  const ctx = canvas.getContext('2d')
+  canvasContext.value = refCanvas.value.getContext('2d', { willReadFrequently: true })
 
-  const img = new Image()
-  img.src = props.imageSrc
+  refImage.value = new Image()
+  refImage.value.src = props.imageSrc
 
-  img.onload = () => {
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
+  refImage.value.onload = () => {
+    const { width, height } = refImage.value
+    refCanvas.value.width = width
+    refCanvas.value.height = height
+    canvasContext.value.drawImage(refImage.value, 0, 0)
+    imageData.value = canvasContext.value.getImageData(0, 0, width, height)
   }
 }
 
 onMounted(drawImage)
 
-const sortedColors = ref([])
-
-const onClickGetColor = () => {
-  const img = new Image()
-  img.src = props.imageSrc
-
+const onClickAddColor = () => {
   const colorThief = new ColorThief()
 
-  img.onload = () => {
-    const data = colorThief.getPalette(img, 5)
-    sortedColors.value = data.map(([r, g, b]) => `rgb(${r}, ${g}, ${b})`)
-  }
+  const getCount = targetColors.value.length < 2 ? 2 : targetColors.value.length + 1
+  const palettes = colorThief.getPalette(refImage.value, getCount)
+  targetColors.value = palettes.map(([r, g, b]) => `rgb(${r}, ${g}, ${b})`)
+  newColors.value = palettes.map(([r, g, b]) => '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1))
+
+  canvasContext.value.putImageData(imageData.value, 0, 0)
+  emit('change-map', refCanvas.value)
 }
 
 const targetColors = ref([])
 const newColors = ref([])
-const onClickShowTargetColor = () => {
-  newColors.value.push('#eeff00')
-  targetColors.value.push(sortedColors.value[targetColors.value.length])
-
-  // for (let i = 0; i < (sortedColors.value.length > 100 ? 100 : sortedColors.value.length); i += 1) {
-  //   newColors.value.push('#eeff00')
-  //   targetColors.value.push(sortedColors.value[targetColors.value.length])
-  // }
-}
 
 const refineColorCode = (original) => {
   if (original.includes('rgb')) {
@@ -109,12 +96,19 @@ const refineColorCode = (original) => {
   return [255, 255, 255]
 }
 
-const onClickChangeColor = () => {
-  const canvas = refCanvas.value
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+watch(
+  () => newColors.value.join(''),
+  (newVal, oldVal) => {
+    if (newVal.length === oldVal.length) {
+      onClickChangeColor()
+    }
+  }
+)
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const pixelData = imageData.data
+const onClickChangeColor = () => {
+  const pixelData = imageData.value.data
+  const newPixelData = new Uint8ClampedArray(pixelData.length)
+  newPixelData.set(pixelData)
 
   const changeTargetColor = (targetColor, newColor) => {
     const originalColorCode = refineColorCode(targetColor)
@@ -131,9 +125,9 @@ const onClickChangeColor = () => {
         pixelData[i + 2] >= originalColorCode[2] - range &&
         pixelData[i + 2] <= originalColorCode[2] + range
       ) {
-        pixelData[i] = newColorCode[0]
-        pixelData[i + 1] = newColorCode[1]
-        pixelData[i + 2] = newColorCode[2]
+        newPixelData[i] = newColorCode[0]
+        newPixelData[i + 1] = newColorCode[1]
+        newPixelData[i + 2] = newColorCode[2]
       }
     }
   }
@@ -142,9 +136,12 @@ const onClickChangeColor = () => {
     changeTargetColor(color, newColors.value[index])
   })
 
-  console.log(imageData)
+  const { width, height } = imageData.value
+  const newImageData = new ImageData(width, height)
+  newImageData.data.set(newPixelData)
 
-  ctx.putImageData(imageData, 0, 0)
+  canvasContext.value.putImageData(newImageData, 0, 0)
+  emit('change-map', refCanvas.value)
 }
 </script>
 

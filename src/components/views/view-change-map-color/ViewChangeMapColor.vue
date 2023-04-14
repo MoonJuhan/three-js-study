@@ -15,7 +15,7 @@ import { RouterLink } from 'vue-router'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import MapControls from './MapControls'
-import baseImage from '@/assets/sample-base-map/sample-base-01.png'
+import baseImage from '@/assets/sample-base-map/sample-base-01-1.png'
 import sample_background_01 from '@/assets/sample-hdri-background/sample-hdri-background-01.png'
 
 const refThdViewer = ref()
