@@ -95,6 +95,15 @@ const changeMap = (canvas) => {
   sphere = new THREE.Mesh(geometry, material)
   scene.add(sphere)
 }
+
+onUnmounted(() => {
+  cancelAnimationFrame(animation.value)
+  geometry.dispose()
+  baseColorMap.dispose()
+  material.dispose()
+  textureEquirec.dispose()
+  renderer.dispose()
+})
 </script>
 
 <style lang="scss" scoped>
