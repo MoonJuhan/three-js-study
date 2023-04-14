@@ -20,7 +20,18 @@ import sample_background_01 from '@/assets/sample-hdri-background/sample-hdri-ba
 
 const refThdViewer = ref()
 
-let camera, scene, renderer, sphere, geometry, baseColorMap, material, textureEquirec
+let camera, scene, renderer, sphere, geometry, textureEquirec
+
+const setTextureDefaultOptions = (texture) => {
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+}
+
+const setMaterialDefaultOptions = (material) => {
+  material.map.repeat.set(2, 2)
+  material.envMap = textureEquirec
+  material.envMapIntensity = 5
+}
 
 const init = () => {
   const container = document.createElement('div')
@@ -44,32 +55,29 @@ const init = () => {
   geometry = new THREE.SphereGeometry(1, 256, 256)
 
   const loader = new THREE.TextureLoader()
-  baseColorMap = loader.load(baseImage)
-  baseColorMap.wrapS = THREE.RepeatWrapping
-  baseColorMap.wrapT = THREE.RepeatWrapping
+  const texture = loader.load(baseImage)
+  setTextureDefaultOptions(texture)
 
-  material = new THREE.MeshStandardMaterial()
-  material.map = baseColorMap
-  material.map.repeat.set(1.8, 1.8)
-
-  const textureLoader = new THREE.TextureLoader()
-
-  textureEquirec = textureLoader.load(sample_background_01)
+  textureEquirec = loader.load(sample_background_01)
   textureEquirec.mapping = THREE.EquirectangularReflectionMapping
   textureEquirec.encoding = THREE.sRGBEncoding
 
+  const material = new THREE.MeshStandardMaterial()
+  material.map = texture
+  setMaterialDefaultOptions(material)
+
   scene.background = textureEquirec
-  material.envMap = textureEquirec
-  material.envMapIntensity = 5
 
   sphere = new THREE.Mesh(geometry, material)
   scene.add(sphere)
+
+  texture.dispose()
+  material.dispose()
 }
 
 const animation = ref()
-const animate = function () {
+const animate = () => {
   animation.value = requestAnimationFrame(animate)
-
   renderer.render(scene, camera)
 }
 
@@ -80,27 +88,21 @@ onMounted(() => {
 
 const changeMap = (canvas) => {
   const newTexture = new THREE.CanvasTexture(canvas)
-  newTexture.wrapS = THREE.RepeatWrapping
-  newTexture.wrapT = THREE.RepeatWrapping
+  setTextureDefaultOptions(newTexture)
 
-  material = new THREE.MeshStandardMaterial({
+  const newMaterial = new THREE.MeshStandardMaterial({
     map: newTexture,
   })
+  setMaterialDefaultOptions(newMaterial)
 
-  material.map.repeat.set(1.8, 1.8)
-  material.envMap = textureEquirec
-  material.envMapIntensity = 5
-
-  scene.remove(sphere)
-  sphere = new THREE.Mesh(geometry, material)
-  scene.add(sphere)
+  sphere.material = newMaterial
+  newTexture.dispose()
+  newMaterial.dispose()
 }
 
 onUnmounted(() => {
   cancelAnimationFrame(animation.value)
   geometry.dispose()
-  baseColorMap.dispose()
-  material.dispose()
   textureEquirec.dispose()
   renderer.dispose()
 })
