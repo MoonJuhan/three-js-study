@@ -138,6 +138,9 @@ const renderSphere = (
     isUseNormalMap: true,
     isUseRoughnessMap: true,
     toneMappingExpose: 1,
+    hsl01: 1,
+    hsl02: 1,
+    hsl03: 1,
   }
 ) => {
   const {
@@ -152,6 +155,9 @@ const renderSphere = (
     isUseNormalMap,
     isUseRoughnessMap,
     toneMappingExpose,
+    hsl01,
+    hsl02,
+    hsl03,
   } = options
 
   material = new THREE.MeshStandardMaterial()
@@ -183,6 +189,10 @@ const renderSphere = (
     material.envMap = textureEquirec
     material.envMapIntensity = envMapIntensity || 5
   }
+
+  const color = new THREE.Color()
+  color.setHSL(hsl01, hsl02, hsl03)
+  material.color = color
 
   sphere = new THREE.Mesh(geometry, material)
   renderer.toneMappingExposure = toneMappingExpose

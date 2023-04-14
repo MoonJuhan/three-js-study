@@ -115,6 +115,32 @@
         <input type="checkbox" v-model="isUseRoughnessMap" />
       </div>
     </div>
+    <div v-if="!isFolded[2]" class="controls">
+      <AppSlider
+        :currentValue="hsl01"
+        @update-current-value="setHsl01"
+        :minNumber="0"
+        :maxNumber="1"
+        :fixedPoint="2"
+        label="HSL 01"
+      />
+      <AppSlider
+        :currentValue="hsl02"
+        @update-current-value="setHsl02"
+        :minNumber="0"
+        :maxNumber="1"
+        :fixedPoint="2"
+        label="HSL 02"
+      />
+      <AppSlider
+        :currentValue="hsl03"
+        @update-current-value="setHsl03"
+        :minNumber="0"
+        :maxNumber="1"
+        :fixedPoint="2"
+        label="HSL 03"
+      />
+    </div>
 
     <div class="controls-header">
       <span class="controls-label">Background Controls</span>
@@ -233,6 +259,21 @@ const setToneMappingExpose = (value) => {
   toneMappingExpose.value = value
 }
 
+const hsl01 = ref(1)
+const setHsl01 = (value) => {
+  hsl01.value = value
+}
+
+const hsl02 = ref(1)
+const setHsl02 = (value) => {
+  hsl02.value = value
+}
+
+const hsl03 = ref(1)
+const setHsl03 = (value) => {
+  hsl03.value = value
+}
+
 watch(
   () => [
     heightScale.value,
@@ -246,6 +287,9 @@ watch(
     isUseNormalMap.value,
     isUseRoughnessMap.value,
     toneMappingExpose.value,
+    hsl01.value,
+    hsl02.value,
+    hsl03.value,
   ],
   () => {
     emit('re-render-sphere', {
@@ -260,6 +304,9 @@ watch(
       isUseNormalMap: isUseNormalMap.value,
       isUseRoughnessMap: isUseRoughnessMap.value,
       toneMappingExpose: toneMappingExpose.value,
+      hsl01: hsl01.value,
+      hsl02: hsl02.value,
+      hsl03: hsl03.value,
     })
   }
 )
