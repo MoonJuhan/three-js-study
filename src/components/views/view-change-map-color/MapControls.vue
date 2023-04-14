@@ -7,7 +7,7 @@
     <div class="controls">
       <button @click="onClickGetColor">Get Color</button>
       <div>{{ sortedColors.length }} Colors Found</div>
-      <button @click="onClickShowTargetColor" :disabled="sortedColors.length === 0">Set 100 Target Color</button>
+      <button @click="onClickShowTargetColor" :disabled="sortedColors.length === 0">Set Target Colors</button>
       <button @click="onClickChangeColor" :disabled="sortedColors.length === 0 || targetColors.length === 0">
         Change Color
       </button>
@@ -32,6 +32,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
+import ColorThief from 'colorthief'
 
 const emit = defineEmits(['change-map'])
 
@@ -63,36 +64,27 @@ onMounted(drawImage)
 const sortedColors = ref([])
 
 const onClickGetColor = () => {
-  const canvas = refCanvas.value
-  const ctx = canvas.getContext('2d')
+  const img = new Image()
+  img.src = props.imageSrc
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const data = imageData.data
+  const colorThief = new ColorThief()
 
-  const colorCounts = {}
-
-  for (let i = 0; i < data.length; i += 4) {
-    const color = `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`
-
-    if (!colorCounts[color]) {
-      colorCounts[color] = 1
-    } else {
-      colorCounts[color] += 1
-    }
+  img.onload = () => {
+    const data = colorThief.getPalette(img, 5)
+    sortedColors.value = data.map(([r, g, b]) => `rgb(${r}, ${g}, ${b})`)
   }
-
-  sortedColors.value = Object.keys(colorCounts).sort((a, b) => colorCounts[b] - colorCounts[a])
 }
 
 const targetColors = ref([])
 const newColors = ref([])
 const onClickShowTargetColor = () => {
-  //   newColors.value.push(sortedColors.value[targetColors.value.length])
+  newColors.value.push('#eeff00')
+  targetColors.value.push(sortedColors.value[targetColors.value.length])
 
-  for (let i = 0; i < 100; i += 1) {
-    newColors.value.push('#eeff00')
-    targetColors.value.push(sortedColors.value[targetColors.value.length])
-  }
+  // for (let i = 0; i < (sortedColors.value.length > 100 ? 100 : sortedColors.value.length); i += 1) {
+  //   newColors.value.push('#eeff00')
+  //   targetColors.value.push(sortedColors.value[targetColors.value.length])
+  // }
 }
 
 const refineColorCode = (original) => {
@@ -128,11 +120,16 @@ const onClickChangeColor = () => {
     const originalColorCode = refineColorCode(targetColor)
     const newColorCode = refineColorCode(newColor)
 
+    const range = 30
+
     for (let i = 0; i < pixelData.length; i += 4) {
       if (
-        pixelData[i] === originalColorCode[0] &&
-        pixelData[i + 1] === originalColorCode[1] &&
-        pixelData[i + 2] === originalColorCode[2]
+        pixelData[i] >= originalColorCode[0] - range &&
+        pixelData[i] <= originalColorCode[0] + range &&
+        pixelData[i + 1] >= originalColorCode[1] - range &&
+        pixelData[i + 1] <= originalColorCode[1] + range &&
+        pixelData[i + 2] >= originalColorCode[2] - range &&
+        pixelData[i + 2] <= originalColorCode[2] + range
       ) {
         pixelData[i] = newColorCode[0]
         pixelData[i + 1] = newColorCode[1]
