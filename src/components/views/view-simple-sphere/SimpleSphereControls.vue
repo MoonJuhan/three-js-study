@@ -73,21 +73,14 @@
         label="Roughness"
       />
       <AppSlider
-        :currentValue="normalScaleVector01"
-        @update-current-value="setNormalScaleVector01"
+        :currentValue="normalScale"
+        @update-current-value="setNormalScale"
         :minNumber="-1"
         :maxNumber="1"
         :fixedPoint="1"
-        label="normalScaleVector01"
+        label="Normal Scale"
       />
-      <AppSlider
-        :currentValue="normalScaleVector02"
-        @update-current-value="setNormalScaleVector02"
-        :minNumber="-1"
-        :maxNumber="1"
-        :fixedPoint="1"
-        label="normalScaleVector02"
-      />
+
       <AppSlider
         :currentValue="scaleSize"
         @update-current-value="setScaleSize"
@@ -201,6 +194,7 @@ const emit = defineEmits([
   'set-options',
   're-render-geometry',
   're-render-sphere',
+  're-render-map',
   're-render-background',
   'change-is-rotate',
 ])
@@ -219,14 +213,9 @@ const setRoughness = (value) => {
   roughness.value = value
 }
 
-const normalScaleVector01 = ref(1)
-const setNormalScaleVector01 = (value) => {
-  normalScaleVector01.value = value
-}
-
-const normalScaleVector02 = ref(1)
-const setNormalScaleVector02 = (value) => {
-  normalScaleVector02.value = value
+const normalScale = ref(1)
+const setNormalScale = (value) => {
+  normalScale.value = value
 }
 
 const scaleSize = ref(1)
@@ -276,37 +265,63 @@ const setHsl03 = (value) => {
 
 watch(
   () => [
-    heightScale.value,
-    roughness.value,
-    normalScaleVector01.value,
-    normalScaleVector02.value,
-    scaleSize.value,
-    envMapIntensity.value,
-    isUseMap.value,
-    isUseDisplacementMap.value,
-    isUseNormalMap.value,
-    isUseRoughnessMap.value,
-    toneMappingExpose.value,
     hsl01.value,
     hsl02.value,
     hsl03.value,
+    normalScale.value,
+    scaleSize.value,
+    heightScale.value,
+    roughness.value,
+    envMapIntensity.value,
+    toneMappingExpose.value,
   ],
+  (oldVal, newVal) => {
+    const isDiff = (oldValue, newValue) => oldValue !== newValue
+
+    const options = {}
+
+    if (isDiff(oldVal[0], newVal[0]) || isDiff(oldVal[1], newVal[1]) || isDiff(oldVal[2], newVal[2])) {
+      options.hsl01 = hsl01.value
+      options.hsl02 = hsl02.value
+      options.hsl03 = hsl03.value
+    }
+
+    if (isDiff(oldVal[3], newVal[3])) {
+      options.normalScale = normalScale.value
+    }
+
+    if (isDiff(oldVal[4], newVal[4])) {
+      options.scaleSize = scaleSize.value
+    }
+
+    if (isDiff(oldVal[5], newVal[5])) {
+      options.heightScale = heightScale.value
+    }
+
+    if (isDiff(oldVal[6], newVal[6])) {
+      options.roughness = roughness.value
+    }
+
+    if (isDiff(oldVal[7], newVal[7])) {
+      options.envMapIntensity = envMapIntensity.value
+    }
+
+    if (isDiff(oldVal[8], newVal[8])) {
+      options.toneMappingExpose = toneMappingExpose.value
+    }
+
+    emit('re-render-sphere', options)
+  }
+)
+
+watch(
+  () => [isUseMap.value, isUseDisplacementMap.value, isUseNormalMap.value, isUseRoughnessMap.value],
   () => {
-    emit('re-render-sphere', {
-      heightScale: heightScale.value,
-      roughness: roughness.value,
-      normalScaleVector01: normalScaleVector01.value,
-      normalScaleVector02: normalScaleVector02.value,
-      scaleSize: scaleSize.value,
-      envMapIntensity: envMapIntensity.value,
+    emit('re-render-map', {
       isUseMap: isUseMap.value,
       isUseDisplacementMap: isUseDisplacementMap.value,
       isUseNormalMap: isUseNormalMap.value,
       isUseRoughnessMap: isUseRoughnessMap.value,
-      toneMappingExpose: toneMappingExpose.value,
-      hsl01: hsl01.value,
-      hsl02: hsl02.value,
-      hsl03: hsl03.value,
     })
   }
 )

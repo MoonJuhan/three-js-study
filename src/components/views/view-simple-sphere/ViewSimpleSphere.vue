@@ -8,6 +8,7 @@ Can you understand the code below?
     <SimpleSphereControls
       @re-render-geometry="reRenderGeometry"
       @re-render-sphere="reRenderSphere"
+      @re-render-map="reRenderMap"
       @re-render-background="renderBackground"
       :isRotate="isRotate"
       @change-is-rotate="
@@ -37,6 +38,8 @@ let camera, scene, renderer, sphere
 
 const refThdViewer = ref()
 
+let baseColorMap, displacementMap, normalMap, roughnessMap
+
 const init = () => {
   const container = document.createElement('div')
   refThdViewer.value.appendChild(container)
@@ -56,167 +59,147 @@ const init = () => {
 
   new OrbitControls(camera, renderer.domElement)
 
-  loadGeometryAndTexture()
-  renderLight()
-  renderSphere()
-  renderBackground()
-}
-
-const loadGeometryAndTexture = async () => {
-  // Sphere Geometry
-  geometry = new THREE.SphereGeometry(1, 64, 64)
-
-  // Box Geometry
-  // geometry = new THREE.BoxGeometry(1, 1, 1)
+  const geometry = new THREE.SphereGeometry(1, 64, 64)
 
   const loader = new THREE.TextureLoader()
-  baseColorMap = loader.load(sample_base)
-  baseColorMap.wrapS = THREE.RepeatWrapping
-  baseColorMap.wrapT = THREE.RepeatWrapping
 
-  displacementMap = loader.load(sample_disp)
-  displacementMap.wrapS = THREE.RepeatWrapping
-  displacementMap.wrapT = THREE.RepeatWrapping
+  const loadMap = (src) => {
+    const texture = loader.load(src)
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
 
-  normalMap = loader.load(sample_normal)
-  normalMap.wrapS = THREE.RepeatWrapping
-  normalMap.wrapT = THREE.RepeatWrapping
+    return texture
+  }
 
-  roughnessMap = loader.load(sample_rough)
-  roughnessMap.wrapS = THREE.RepeatWrapping
-  roughnessMap.wrapT = THREE.RepeatWrapping
+  baseColorMap = loadMap(sample_base)
+  displacementMap = loadMap(sample_disp)
+  normalMap = loadMap(sample_normal)
+  roughnessMap = loadMap(sample_rough)
+
+  const material = new THREE.MeshStandardMaterial({
+    map: baseColorMap,
+    displacementMap: displacementMap,
+    displacementScale: 0.01,
+    normalMap: normalMap,
+    roughnessMap: roughnessMap,
+    roughness: 0.3,
+  })
+
+  sphere = new THREE.Mesh(geometry, material)
+  renderer.toneMappingExposure = 1
+
+  scene.add(sphere)
+
+  renderBackground()
+  geometry.dispose()
 }
 
 const reRenderGeometry = ({ segments }) => {
-  scene.remove(sphere)
-  geometry.dispose()
-
-  geometry = new THREE.SphereGeometry(1, segments, segments)
-  sphere = new THREE.Mesh(geometry, material)
-
-  scene.add(sphere)
+  sphere.geometry = new THREE.SphereGeometry(1, segments, segments)
 }
 
-const renderLight = () => {
-  // var light = new THREE.DirectionalLight(0xffffff, 1)
-  // light.position.set(1, 1, 1)
-  // scene.add(light)
-  // // add some lights to the scene
-  // const light1 = new THREE.PointLight(0xffffff, 1, 100)
-  // light1.position.set(0, 5, 0)
-  // scene.add(light1)
-  // const light2 = new THREE.AmbientLight(0xffffff, 0.2)
-  // scene.add(light2)
-}
+const reRenderSphere = (options = {}) => {
+  const keys = Object.keys(options)
 
-let geometry, baseColorMap, displacementMap, normalMap, roughnessMap, material
+  if (keys.includes('hsl01') && keys.includes('hsl02') && keys.includes('hsl03')) {
+    const { hsl01, hsl02, hsl03 } = options
 
-const removeSphere = () => {
-  scene.remove(sphere)
+    const newColor = new THREE.Color()
+    newColor.setHSL(hsl01, hsl02, hsl03)
 
-  geometry.dispose()
-
-  baseColorMap.dispose()
-  displacementMap.dispose()
-  normalMap.dispose()
-  roughnessMap.dispose()
-  material.dispose()
-
-  renderer.info.reset()
-}
-
-const renderSphere = (
-  options = {
-    heightScale: 0.01,
-    roughness: 0.3,
-    normalScaleVector01: 1,
-    normalScaleVector02: 1,
-    scaleSize: 1,
-    envMapIntensity: 5,
-    isUseMap: true,
-    isUseDisplacementMap: true,
-    isUseNormalMap: true,
-    isUseRoughnessMap: true,
-    toneMappingExpose: 1,
-    hsl01: 1,
-    hsl02: 1,
-    hsl03: 1,
+    sphere.material.color = newColor
   }
-) => {
-  const {
-    heightScale,
-    normalScaleVector01,
-    normalScaleVector02,
-    roughness,
-    scaleSize,
-    envMapIntensity,
-    isUseMap,
-    isUseDisplacementMap,
-    isUseNormalMap,
-    isUseRoughnessMap,
-    toneMappingExpose,
-    hsl01,
-    hsl02,
-    hsl03,
-  } = options
 
-  material = new THREE.MeshStandardMaterial()
+  if (keys.includes('normalScale')) {
+    const { normalScale } = options
 
-  if (isUseMap) {
+    sphere.material.normalScale = new THREE.Vector2(normalScale, normalScale)
+  }
+
+  if (keys.includes('scaleSize')) {
+    const { scaleSize } = options
+
+    sphere.material.map?.repeat.set(scaleSize, scaleSize)
+    sphere.material.displacementMap?.repeat.set(scaleSize, scaleSize)
+    sphere.material.normalMap?.repeat.set(scaleSize, scaleSize)
+    sphere.material.roughnessMap?.repeat.set(scaleSize, scaleSize)
+  }
+
+  if (keys.includes('heightScale')) {
+    const { heightScale } = options
+
+    sphere.material.displacementScale = heightScale
+  }
+
+  if (keys.includes('roughness')) {
+    const { roughness } = options
+
+    sphere.material.roughness = roughness
+  }
+
+  if (keys.includes('envMapIntensity')) {
+    const { envMapIntensity } = options
+
+    sphere.material.envMapIntensity = envMapIntensity
+  }
+
+  if (keys.includes('toneMappingExpose')) {
+    const { toneMappingExpose } = options
+
+    renderer.toneMappingExposure = toneMappingExpose
+  }
+}
+
+const reRenderMap = ({ isUseMap, isUseDisplacementMap, isUseNormalMap, isUseRoughnessMap }) => {
+  const { material } = sphere
+
+  if (isUseMap && !material.map) {
     material.map = baseColorMap
-    material.map.repeat.set(scaleSize, scaleSize)
   }
 
-  if (isUseDisplacementMap) {
+  if (!isUseMap) {
+    material.map = null
+  }
+
+  if (isUseDisplacementMap && !material.displacementMap) {
     material.displacementMap = displacementMap
-    material.displacementMap.repeat.set(scaleSize, scaleSize)
-    material.displacementScale = heightScale
   }
 
-  if (isUseNormalMap) {
+  if (!isUseDisplacementMap) {
+    material.displacementMap = null
+  }
+
+  if (isUseNormalMap && !material.normalMap) {
     material.normalMap = normalMap
-    material.normalMap.repeat.set(scaleSize, scaleSize)
-    material.normalScale = new THREE.Vector2(normalScaleVector01, normalScaleVector02)
   }
 
-  if (isUseRoughnessMap) {
+  if (!isUseNormalMap) {
+    material.normalMap = null
+  }
+
+  if (isUseRoughnessMap && !material.roughnessMap) {
     material.roughnessMap = roughnessMap
-    material.roughnessMap.repeat.set(scaleSize, scaleSize)
-    material.roughness = roughness
   }
 
-  if (textureEquirec) {
-    material.envMap = textureEquirec
-    material.envMapIntensity = envMapIntensity || 5
+  if (!isUseRoughnessMap) {
+    material.roughnessMap = null
   }
 
-  const color = new THREE.Color()
-  color.setHSL(hsl01, hsl02, hsl03)
-  material.color = color
-
-  sphere = new THREE.Mesh(geometry, material)
-  renderer.toneMappingExposure = toneMappingExpose
-
-  scene.add(sphere)
+  material.needsUpdate = true
 }
-
-const reRenderSphere = (options) => {
-  removeSphere()
-  renderSphere(options)
-}
-
-let textureEquirec
 
 const renderBackground = (src = sample_background_01) => {
   const textureLoader = new THREE.TextureLoader()
 
-  textureEquirec = textureLoader.load(src)
+  const textureEquirec = textureLoader.load(src)
   textureEquirec.mapping = THREE.EquirectangularReflectionMapping
   textureEquirec.encoding = THREE.sRGBEncoding
 
   scene.background = textureEquirec
-  material.envMap = textureEquirec
-  material.envMapIntensity = 5
+  sphere.material.envMap = textureEquirec
+  sphere.material.envMapIntensity = 5
+
+  textureEquirec.dispose()
 }
 
 const animation = ref()
@@ -239,10 +222,22 @@ onMounted(() => {
   animate()
 })
 
+const removeSphere = () => {
+  scene.remove(sphere)
+
+  baseColorMap.dispose()
+  displacementMap.dispose()
+  normalMap.dispose()
+  roughnessMap.dispose()
+
+  renderer.info.reset()
+}
+
 const resetVariables = () => {
   camera = null
   scene = null
   renderer = null
+  sphere = null
 }
 
 onUnmounted(() => {
