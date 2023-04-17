@@ -1,8 +1,10 @@
 <template>
   <div class="map-controls">
     <span>Preview</span>
-
-    <canvas ref="refCanvas" class="image-preview" />
+    <div class="preview-canvas-wrapper">
+      <button @click="isSizeUp = !isSizeUp">{{ isSizeUp ? 'Size Down' : 'Size Up' }}</button>
+      <canvas ref="refCanvas" class="image-preview" :class="{ 'size-up': isSizeUp }" />
+    </div>
 
     <div class="controls">
       <button @click="onClickAddColor">Add Color</button>
@@ -204,6 +206,8 @@ watch(
     }
   }
 )
+
+const isSizeUp = ref(false)
 </script>
 
 <style lang="scss" scoped>
@@ -218,8 +222,19 @@ watch(
 
   .image-preview {
     border: 1px solid black;
-    width: 600px;
+    width: 400px;
+    transition: width 0.4s;
     aspect-ratio: 1 / 1;
+
+    &.size-up {
+      width: 600px;
+    }
+  }
+
+  .preview-canvas-wrapper {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
   }
 
   .controls {
