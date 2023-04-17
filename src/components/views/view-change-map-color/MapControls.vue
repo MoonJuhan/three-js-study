@@ -105,6 +105,16 @@ watch(
   }
 )
 
+const refineNewColorCode = (oldColorCode, targetColorCode, newColorCode) => {
+  const colorCode = newColorCode + oldColorCode - targetColorCode
+
+  if (colorCode < 0) return 0
+
+  if (colorCode > 255) return 255
+
+  return colorCode
+}
+
 const onClickChangeColor = () => {
   const pixelData = imageData.value.data
   const newPixelData = new Uint8ClampedArray(pixelData.length)
@@ -113,6 +123,10 @@ const onClickChangeColor = () => {
   const changeTargetColor = (targetColor, newColor) => {
     const originalColorCode = refineColorCode(targetColor)
     const newColorCode = refineColorCode(newColor)
+
+    if (originalColorCode.join('') === newColorCode.join('')) {
+      return
+    }
 
     const range = 30
 
@@ -125,9 +139,9 @@ const onClickChangeColor = () => {
         pixelData[i + 2] >= originalColorCode[2] - range &&
         pixelData[i + 2] <= originalColorCode[2] + range
       ) {
-        newPixelData[i] = newColorCode[0]
-        newPixelData[i + 1] = newColorCode[1]
-        newPixelData[i + 2] = newColorCode[2]
+        newPixelData[i] = refineNewColorCode(originalColorCode[0], pixelData[i], newColorCode[0])
+        newPixelData[i + 1] = refineNewColorCode(originalColorCode[1], pixelData[i + 1], newColorCode[1])
+        newPixelData[i + 2] = refineNewColorCode(originalColorCode[2], pixelData[i + 2], newColorCode[2])
       }
     }
   }
