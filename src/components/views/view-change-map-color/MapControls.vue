@@ -6,6 +6,14 @@
 
     <div class="controls">
       <button @click="onClickAddColor">Add Color</button>
+      <AppSlider
+        :currentValue="colorRange"
+        @update-current-value="setColorRange"
+        :minNumber="10"
+        :maxNumber="80"
+        :fixedPoint="0"
+        label="Color Range"
+      />
     </div>
 
     <div class="controls">
@@ -27,6 +35,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import ColorThief from 'colorthief'
+import AppSlider from '@/components/app/AppSlider.vue'
 
 const emit = defineEmits(['change-map'])
 
@@ -41,6 +50,7 @@ const refCanvas = ref()
 const canvasContext = ref()
 const refImage = ref()
 const imageData = ref()
+const newPixelData = ref()
 
 const drawImage = () => {
   canvasContext.value = refCanvas.value.getContext('2d', { willReadFrequently: true })
@@ -54,6 +64,9 @@ const drawImage = () => {
     refCanvas.value.height = height
     canvasContext.value.drawImage(refImage.value, 0, 0)
     imageData.value = canvasContext.value.getImageData(0, 0, width, height)
+    const pixelData = imageData.value.data
+    newPixelData.value = new Uint8ClampedArray(pixelData.length)
+    newPixelData.value.set(pixelData)
   }
 }
 
@@ -68,13 +81,14 @@ const onClickAddColor = () => {
   newColors.value = palettes.map(([r, g, b]) => '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1))
 
   canvasContext.value.putImageData(imageData.value, 0, 0)
+  newPixelData.value.set(imageData.value.data)
   emit('change-map', refCanvas.value)
 }
 
 const targetColors = ref([])
 const newColors = ref([])
 
-const refineColorCode = (original) => {
+const refineRGBCode = (original) => {
   if (original.includes('rgb')) {
     return original
       .replace('rgb(', '')
@@ -96,11 +110,16 @@ const refineColorCode = (original) => {
   return [255, 255, 255]
 }
 
+const colorRange = ref(30)
+const setColorRange = (value) => {
+  colorRange.value = value
+}
+
 watch(
   () => newColors.value.join(''),
   (newVal, oldVal) => {
     if (newVal.length === oldVal.length) {
-      onClickChangeColor()
+      onClickChangeColor(newVal, oldVal)
     }
   }
 )
@@ -115,48 +134,76 @@ const refineNewColorCode = (oldColorCode, targetColorCode, newColorCode) => {
   return colorCode
 }
 
-const onClickChangeColor = () => {
+const onClickChangeColor = (newValues, oldValues) => {
   const pixelData = imageData.value.data
-  const newPixelData = new Uint8ClampedArray(pixelData.length)
-  newPixelData.set(pixelData)
 
   const changeTargetColor = (targetColor, newColor) => {
-    const originalColorCode = refineColorCode(targetColor)
-    const newColorCode = refineColorCode(newColor)
+    const originalColorCode = refineRGBCode(targetColor)
+    const newColorCode = refineRGBCode(newColor)
 
     if (originalColorCode.join('') === newColorCode.join('')) {
       return
     }
 
-    const range = 30
-
     for (let i = 0; i < pixelData.length; i += 4) {
       if (
-        pixelData[i] >= originalColorCode[0] - range &&
-        pixelData[i] <= originalColorCode[0] + range &&
-        pixelData[i + 1] >= originalColorCode[1] - range &&
-        pixelData[i + 1] <= originalColorCode[1] + range &&
-        pixelData[i + 2] >= originalColorCode[2] - range &&
-        pixelData[i + 2] <= originalColorCode[2] + range
+        pixelData[i] >= originalColorCode[0] - colorRange.value &&
+        pixelData[i] <= originalColorCode[0] + colorRange.value &&
+        pixelData[i + 1] >= originalColorCode[1] - colorRange.value &&
+        pixelData[i + 1] <= originalColorCode[1] + colorRange.value &&
+        pixelData[i + 2] >= originalColorCode[2] - colorRange.value &&
+        pixelData[i + 2] <= originalColorCode[2] + colorRange.value
       ) {
-        newPixelData[i] = refineNewColorCode(originalColorCode[0], pixelData[i], newColorCode[0])
-        newPixelData[i + 1] = refineNewColorCode(originalColorCode[1], pixelData[i + 1], newColorCode[1])
-        newPixelData[i + 2] = refineNewColorCode(originalColorCode[2], pixelData[i + 2], newColorCode[2])
+        newPixelData.value[i] = refineNewColorCode(originalColorCode[0], pixelData[i], newColorCode[0])
+        newPixelData.value[i + 1] = refineNewColorCode(originalColorCode[1], pixelData[i + 1], newColorCode[1])
+        newPixelData.value[i + 2] = refineNewColorCode(originalColorCode[2], pixelData[i + 2], newColorCode[2])
       }
     }
   }
 
-  targetColors.value.forEach((color, index) => {
-    changeTargetColor(color, newColors.value[index])
+  const diffColors = newValues
+    .split('#')
+    .filter((value, index) => value !== oldValues.split('#')[index])
+    .map((value) => `#${value}`)
+
+  const updatedColors = newColors.value.map((color, index) => {
+    if (diffColors.includes(color)) {
+      return {
+        targetColor: targetColors.value[index],
+        newColor: color,
+      }
+    }
+
+    return {}
+  })
+
+  updatedColors.forEach(({ targetColor, newColor }) => {
+    if (targetColor && newColor) {
+      changeTargetColor(targetColor, newColor)
+    }
   })
 
   const { width, height } = imageData.value
   const newImageData = new ImageData(width, height)
-  newImageData.data.set(newPixelData)
+  newImageData.data.set(newPixelData.value)
 
   canvasContext.value.putImageData(newImageData, 0, 0)
   emit('change-map', refCanvas.value)
 }
+
+watch(
+  () => colorRange.value,
+  () => {
+    if (newColors.value.length > 0) {
+      newPixelData.value.set(imageData.value.data)
+
+      onClickChangeColor(
+        newColors.value.join(''),
+        [...newColors.value].map((color) => `#Z${color.substring(2)}`).join('')
+      )
+    }
+  }
+)
 </script>
 
 <style lang="scss" scoped>

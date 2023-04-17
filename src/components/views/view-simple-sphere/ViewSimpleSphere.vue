@@ -53,7 +53,6 @@ const init = () => {
   renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setSize(width, height)
   renderer.outputEncoding = THREE.sRGBEncoding
-  renderer.physicallyCorrectLights = true
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   container.appendChild(renderer.domElement)
 
