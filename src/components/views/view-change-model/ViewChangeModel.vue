@@ -69,6 +69,7 @@ const animate = () => {
 }
 
 let gltfModel
+let models = []
 
 const setModel = async (type) => {
   textureType.value = ''
@@ -78,33 +79,40 @@ const setModel = async (type) => {
   try {
     const gltfLoader = new GLTFLoader()
 
-    gltfLoader.load(`/sample-gltf/${type.replaceAll(' ', '_')}.gltf`, (gltf) => {
-      const { scale, position } = modelControls.find(({ name }) => name === modelType.value)
-      if (scale) {
-        gltf.scene.scale.set(scale, scale, scale)
-      }
-
-      if (position) {
-        gltf.scene.position.set(position.x, position.y, position.z)
-      }
-
-      gltfModel = gltf.scene
-
-      gltfModel.traverse((object) => {
-        if (
-          object instanceof THREE.Mesh &&
-          materials.value.findIndex((material) => material.uuid === object.material.uuid) === -1
-        ) {
-          object.material.envMap = background.value
-          materials.value.push(object.material)
-        }
+    if (models.findIndex((model) => model.type === type) === -1) {
+      const gltf = await new Promise((resolve, reject) => {
+        gltfLoader.load(`/sample-gltf/${type.replaceAll(' ', '_')}.gltf`, resolve, null, reject)
       })
 
-      scene.add(gltfModel)
+      models.push({ type, gltf })
+    }
+
+    const model = models.find((model) => model.type === type)
+
+    const { scale, position } = modelControls.find(({ name }) => name === modelType.value)
+    if (scale) {
+      model.gltf.scene.scale.set(scale, scale, scale)
+    }
+
+    if (position) {
+      model.gltf.scene.position.set(position.x, position.y, position.z)
+    }
+
+    gltfModel = model.gltf.scene
+
+    model.gltf.scene.traverse((object) => {
+      if (
+        object instanceof THREE.Mesh &&
+        materials.value.findIndex((material) => material.uuid === object.material.uuid) === -1
+      ) {
+        object.material.envMap = background.value
+        materials.value.push(object.material)
+      }
     })
+
+    scene.add(gltfModel)
   } catch (error) {
     console.log(error)
-    console.log('Error')
   }
 }
 
@@ -136,17 +144,21 @@ const setMaterial = async (material) => {
 
   const baseMap = await loadTexture('sample-base', material.map)
   material.map = baseMap
+  baseMap.dispose()
 
   if (material.displacementMap) {
     const displacementMap = await loadTexture('sample-disp', material.displacementMap)
     material.displacementMap = displacementMap
+    displacementMap.dispose()
   }
 
   const normalMap = await loadTexture('sample-normal', material.normalMap)
   material.normalMap = normalMap
+  normalMap.dispose()
 
   const roughnessMap = await loadTexture('sample-rough', material.roughnessMap)
   material.roughnessMap = roughnessMap
+  roughnessMap.dispose()
 
   material.needsUpdate = true
 }
@@ -182,6 +194,10 @@ watch(
 
 onUnmounted(() => {
   cancelAnimationFrame(animation.value)
+
+  scene = null
+  models = null
+  gltfModel = null
 })
 </script>
 
