@@ -6,7 +6,7 @@
     <div class="controls-wrapper">
       <span>Model Controls</span>
       <div class="buttons">
-        <button v-for="model in modelControls" :key="model" @click="modelType = model">
+        <button v-for="model in modelControls.map(({ name }) => name)" :key="model" @click="modelType = model">
           {{ model }} {{ modelType === model ? '(Selected)' : '' }}
         </button>
       </div>
@@ -71,15 +71,23 @@ const animate = () => {
 let gltfModel
 
 const setModel = async (type) => {
+  textureType.value = ''
+  scene.remove(gltfModel)
+  materials.value = []
+
   try {
     const gltfLoader = new GLTFLoader()
 
-    scene.remove(gltfModel)
-    materials.value = []
-
     gltfLoader.load(`/sample-gltf/${type.replaceAll(' ', '_')}.gltf`, (gltf) => {
-      gltf.scene.scale.set(15, 15, 15)
-      gltf.scene.position.set(-0.5, -3.8, -2.5)
+      const { scale, position } = modelControls.find(({ name }) => name === modelType.value)
+      if (scale) {
+        gltf.scene.scale.set(scale, scale, scale)
+      }
+
+      if (position) {
+        gltf.scene.position.set(position.x, position.y, position.z)
+      }
+
       gltfModel = gltf.scene
 
       gltfModel.traverse((object) => {
@@ -105,8 +113,9 @@ const materials = ref([])
 const setTexture = async (type) => {
   console.log(`setTexture ${type}`)
 
+  const { textureTargetIndex } = modelControls.find(({ name }) => name === modelType.value)
   if (type === 'type a') {
-    setMaterial(materials.value[0])
+    setMaterial(materials.value[textureTargetIndex])
   }
 }
 
@@ -133,15 +142,11 @@ const setMaterial = async (material) => {
     material.displacementMap = displacementMap
   }
 
-  if (material.normalMap) {
-    const normalMap = await loadTexture('sample-normal', material.normalMap)
-    material.normalMap = normalMap
-  }
+  const normalMap = await loadTexture('sample-normal', material.normalMap)
+  material.normalMap = normalMap
 
-  if (material.roughnessMap) {
-    const roughnessMap = await loadTexture('sample-rough', material.roughnessMap)
-    material.roughnessMap = roughnessMap
-  }
+  const roughnessMap = await loadTexture('sample-rough', material.roughnessMap)
+  material.roughnessMap = roughnessMap
 
   material.needsUpdate = true
 }
@@ -152,7 +157,11 @@ onMounted(() => {
 })
 
 const modelType = ref('type a')
-const modelControls = ['type a', 'type b']
+const modelControls = [
+  { name: 'type a', scale: 15, position: { x: -0.5, y: -3.8, z: -2.5 }, textureTargetIndex: 0 },
+  { name: 'type b', scale: 10, position: { x: -0.5, y: -3.8, z: -2.5 }, textureTargetIndex: 0 },
+  { name: 'type c', scale: 0.01, textureTargetIndex: 0 },
+]
 
 watch(
   () => modelType.value,
