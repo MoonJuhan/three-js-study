@@ -27,6 +27,10 @@ const routesBasic = [
     path: '/change-map-color',
     component: () => import(/* webpackChunkName: 'view-change-map-color' */ '../components/views/view-change-map-color/ViewChangeMapColor.vue'),
   },
+  {
+    path: '/change-model',
+    component: () => import(/* webpackChunkName: 'view-change-model' */ '../components/views/view-change-model/ViewChangeModel.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)
