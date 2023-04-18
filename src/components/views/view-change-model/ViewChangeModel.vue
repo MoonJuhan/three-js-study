@@ -74,6 +74,9 @@ const setModel = async (type) => {
   try {
     const gltfLoader = new GLTFLoader()
 
+    scene.remove(gltfModel)
+    materials.value = []
+
     gltfLoader.load(`/sample-gltf/${type.replaceAll(' ', '_')}.gltf`, (gltf) => {
       gltf.scene.scale.set(15, 15, 15)
       gltf.scene.position.set(-0.5, -3.8, -2.5)
@@ -116,7 +119,7 @@ const setMaterial = async (material) => {
     const texture = textureLoader.load(textureSrc.default)
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
-    const { x, y } = oldMap.repeat
+    const { x, y } = oldMap?.repeat || { x: 0.01, y: 0.01 }
     texture.repeat.set(x, y)
 
     return texture
@@ -149,7 +152,7 @@ onMounted(() => {
 })
 
 const modelType = ref('type a')
-const modelControls = ['type a']
+const modelControls = ['type a', 'type b']
 
 watch(
   () => modelType.value,
