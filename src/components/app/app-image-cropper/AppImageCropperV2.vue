@@ -1,14 +1,29 @@
 <template>
   <div ref="refAppImageCropperV2" class="app-image-cropper-v2" :style="appImageCropperV2Style">
     <img :src="imageSrc" />
-    <button class="cropper-edge-button" ref="refNWButton" :style="nwButtonStyle" @mousedown="onMouseDown('nw-button')">
+    <button
+      class="cropper-edge-button"
+      ref="refNWButton"
+      :style="nwButtonStyle"
+      @mousedown="(e) => onMouseDown('nw-button', e)"
+    >
       x
     </button>
-    <button class="cropper-edge-button" ref="refSEButton" :style="seButtonStyle" @mousedown="onMouseDown('se-button')">
+    <button
+      class="cropper-edge-button"
+      ref="refSEButton"
+      :style="seButtonStyle"
+      @mousedown="(e) => onMouseDown('se-button', e)"
+    >
       x
     </button>
 
-    <div class="cropper-box" ref="refCropperBox" :style="cropperBoxStyle" @mousedown="onMouseDown('cropper-box')" />
+    <div
+      class="cropper-box"
+      ref="refCropperBox"
+      :style="cropperBoxStyle"
+      @mousedown="(e) => onMouseDown('cropper-box', e)"
+    />
   </div>
 </template>
 
@@ -53,8 +68,17 @@ const appImageCropperV2Style = computed(() => {
   return {}
 })
 
-const onMouseDown = (type) => {
+const onMouseDown = (type, { clientX, clientY }) => {
   mouseDownedType.value = type
+
+  firstPosition.value = {
+    clientX,
+    clientY,
+    nwButtonLeft: refinePositionNumber(nwButtonStyle.value.left),
+    nwButtonTop: refinePositionNumber(nwButtonStyle.value.top),
+    seButtonRight: refinePositionNumber(seButtonStyle.value.right),
+    seButtonBottom: refinePositionNumber(seButtonStyle.value.bottom),
+  }
 }
 
 onMounted(() => {
@@ -74,91 +98,106 @@ const refNWButton = ref()
 const refSEButton = ref()
 const refCropperBox = ref()
 const boundingClientRects = ref({})
+const firstPosition = ref({})
+
+const refinePositionNumber = (positon) => parseInt(positon.replaceAll('px', ''), 10)
 const minCropperBoxSize = 50
-
-const getMaxPositions = (nwRectName, seRectName) => {
-  const { left, top } = boundingClientRects.value[nwRectName]
-  const { right, bottom } = boundingClientRects.value[seRectName]
-
-  return {
-    left,
-    top,
-    right,
-    bottom,
+const getSymmetryMovePostion = (value01, value02) => (value01 > value02 ? value01 : value02)
+const getNewPosition = (movedPosition, minPosition, maxPosition) => {
+  if (movedPosition < minPosition) {
+    return minPosition
   }
+
+  if (movedPosition > maxPosition) {
+    return maxPosition
+  }
+
+  return movedPosition
 }
 
-const refineSquarePosition = (val01, val02) => (val01 > val02 ? val01 : val02)
+const checkMoveable = ({ clientX: cursorX, clientY: cursorY }) => {
+  const { clientX: newX, clientY: newY } = firstPosition.value
+
+  const nwButtonLeft = refinePositionNumber(nwButtonStyle.value.left)
+  const nwButtonTop = refinePositionNumber(nwButtonStyle.value.top)
+  const seButtonRight = refinePositionNumber(seButtonStyle.value.right)
+  const seButtonBottom = refinePositionNumber(seButtonStyle.value.bottom)
+
+  const results = []
+  if (cursorX - newX < 0 && nwButtonLeft <= 0) {
+    results.push(false)
+  }
+
+  if (cursorX - newX > 0 && seButtonRight <= 0) {
+    results.push(false)
+  }
+
+  if (cursorY - newY < 0 && nwButtonTop <= 0) {
+    results.push(false)
+  }
+
+  if (cursorY - newY > 0 && seButtonBottom <= 0) {
+    results.push(false)
+  }
+
+  return !results.includes(false)
+}
 
 const onMouseMove = (e) => {
   if (!mouseDownedType.value) return
-  const { clientX, clientY } = e
+  const { width: wrapperWidth, height: wrapperHeight } = boundingClientRects.value.refAppImageCropperV2
+  const { clientX, clientY, nwButtonLeft, nwButtonTop, seButtonRight, seButtonBottom } = firstPosition.value
+
+  if (mouseDownedType.value === 'cropper-box' && checkMoveable(e)) {
+    nwButtonStyle.value.left = `${getNewPosition(
+      nwButtonLeft + e.clientX - clientX,
+      0,
+      nwButtonLeft + e.clientX - clientX
+    )}px`
+    nwButtonStyle.value.top = `${getNewPosition(
+      nwButtonTop + e.clientY - clientY,
+      0,
+      nwButtonTop + e.clientY - clientY
+    )}px`
+    seButtonStyle.value.right = `${getNewPosition(
+      seButtonRight - e.clientX + clientX,
+      0,
+      seButtonRight - e.clientX + clientX
+    )}px`
+    seButtonStyle.value.bottom = `${getNewPosition(
+      seButtonBottom - e.clientY + clientY,
+      0,
+      seButtonBottom - e.clientY + clientY
+    )}px`
+    return
+  }
+  const symmetryMovePostion = getSymmetryMovePostion(e.clientX - clientX, e.clientY - clientY)
 
   if (mouseDownedType.value === 'nw-button') {
-    const {
-      left: maxLeft,
-      top: maxTop,
-      right: seButtonRight,
-      bottom: seButtonBottom,
-    } = getMaxPositions('refAppImageCropperV2', 'refSEButton')
-    const maxRight = seButtonRight - minCropperBoxSize
-    const maxBottom = seButtonBottom - minCropperBoxSize
-
-    const getNewPosition = (client, min, max) => {
-      if (client < min) {
-        return 0
-      } else if (client > max) {
-        return max - min
-      } else {
-        return client - min
-      }
-    }
-
-    const newLeft = getNewPosition(clientX, maxLeft, maxRight)
-    const newTop = getNewPosition(clientY, maxTop, maxBottom)
-
-    const newPos = refineSquarePosition(newLeft, newTop)
-
-    nwButtonStyle.value.left = `${newPos}px`
-    nwButtonStyle.value.top = `${newPos}px`
-
-    boundingClientRects.value.refNWButton = refNWButton.value.getBoundingClientRect()
+    nwButtonStyle.value.left = `${getNewPosition(
+      nwButtonLeft + symmetryMovePostion,
+      0,
+      wrapperWidth - minCropperBoxSize - seButtonRight
+    )}px`
+    nwButtonStyle.value.top = `${getNewPosition(
+      nwButtonTop + symmetryMovePostion,
+      0,
+      wrapperHeight - minCropperBoxSize - seButtonBottom
+    )}px`
     return
   }
 
   if (mouseDownedType.value === 'se-button') {
-    const {
-      right: maxRight,
-      bottom: maxBottom,
-      left: nwButtonLeft,
-      top: nwButtonTop,
-    } = getMaxPositions('refNWButton', 'refAppImageCropperV2')
-    const maxLeft = nwButtonLeft + minCropperBoxSize
-    const maxTop = nwButtonTop + minCropperBoxSize
-
-    const getNewPosition = (client, min, max) => {
-      if (client > max) {
-        return 0
-      } else if (client < min) {
-        return min - max
-      } else {
-        return client - max
-      }
-    }
-
-    const newRight = getNewPosition(clientX, maxLeft, maxRight)
-    const newBottom = getNewPosition(clientY, maxTop, maxBottom)
-
-    const newPos = refineSquarePosition(newRight, newBottom)
-
-    seButtonStyle.value.right = `${-newPos}px`
-    seButtonStyle.value.bottom = `${-newPos}px`
-
-    boundingClientRects.value.refSEButton = refSEButton.value.getBoundingClientRect()
-    return
-  }
-
-  if (mouseDownedType.value === 'cropper-box') {
+    seButtonStyle.value.right = `${getNewPosition(
+      seButtonRight - symmetryMovePostion,
+      0,
+      wrapperWidth - minCropperBoxSize - nwButtonLeft
+    )}px`
+    seButtonStyle.value.bottom = `${getNewPosition(
+      seButtonBottom - symmetryMovePostion,
+      0,
+      wrapperHeight - minCropperBoxSize - nwButtonTop
+    )}px`
     return
   }
 }
