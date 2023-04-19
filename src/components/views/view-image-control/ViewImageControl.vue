@@ -17,20 +17,6 @@
           <div class="preview-image" :style="previewImageStlye" />
         </div>
       </div>
-
-      <div class="image-contents">
-        <span>Original Image</span>
-
-        <AppImageCropperV2 ref="refAppImageCropperV2" :imageSrc="baseImage" />
-      </div>
-
-      <div class="image-contents">
-        <span>Cropped Image Preview</span>
-
-        <div class="preview-image-wrapper">
-          <div class="preview-image" :style="previewImageV2Stlye" />
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -39,26 +25,12 @@
 import { ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import baseImage from '@/assets/sample-6-type-map/sample-base.jpg'
-import AppImageCropper from '@/components/app/app-image-cropper/AppImageCropper.vue'
-import AppImageCropperV2 from '@/components/app/app-image-cropper/AppImageCropperV2.vue'
+import AppImageCropper from '@/components/app/app-image-cropper/AppImageCropperV2.vue'
 
 const refAppImageCropper = ref()
-const refAppImageCropperV2 = ref()
 
 const previewImageStlye = computed(() => {
   const { bottom, left, right, top } = refAppImageCropper.value?.cropperBoxStyle || {}
-
-  return {
-    backgroundImage: `url(${baseImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    clipPath: `polygon(${left} ${top}, calc(100% - ${right}) ${top}, calc(100% - ${right}) calc(100% - ${bottom}), ${left} calc(100% - ${bottom}))`,
-  }
-})
-
-const previewImageV2Stlye = computed(() => {
-  const { bottom, left, right, top } = refAppImageCropperV2.value?.cropperBoxStyle || {}
 
   return {
     backgroundImage: `url(${baseImage})`,

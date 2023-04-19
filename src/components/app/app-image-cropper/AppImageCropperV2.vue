@@ -1,5 +1,5 @@
 <template>
-  <div ref="refAppImageCropperV2" class="app-image-cropper-v2" :style="appImageCropperV2Style">
+  <div ref="refAppImageCropper" class="app-image-cropper" :style="appImageCropperStyle">
     <img :src="imageSrc" />
     <button
       class="cropper-edge-button"
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   imageSrc: {
@@ -49,7 +49,7 @@ const cropperBoxStyle = computed(() => {
     cursor,
   }
 })
-const appImageCropperV2Style = computed(() => {
+const appImageCropperStyle = computed(() => {
   if (mouseDownedType.value === 'cropper-box') {
     return {
       cursor: 'move',
@@ -66,7 +66,7 @@ const appImageCropperV2Style = computed(() => {
 })
 
 const mouseDownedType = ref('')
-const refAppImageCropperV2 = ref()
+const refAppImageCropper = ref()
 const firstPositions = ref({})
 const minBoxSize = 60
 
@@ -75,7 +75,7 @@ const refinePixelPostion = (value) => parseInt(value.replace('px', ''), 10)
 const onMouseDown = (type, { clientX, clientY }) => {
   mouseDownedType.value = type
 
-  const { width, height } = refAppImageCropperV2.value.getBoundingClientRect()
+  const { width, height } = refAppImageCropper.value.getBoundingClientRect()
 
   firstPositions.value = {
     cursorX: clientX,
@@ -194,7 +194,7 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.app-image-cropper-v2 {
+.app-image-cropper {
   display: flex;
   position: relative;
   max-width: 600px;
