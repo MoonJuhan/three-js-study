@@ -3,20 +3,11 @@
     <img :src="imageSrc" />
     <button
       class="cropper-edge-button"
-      ref="refNWButton"
-      :style="nwButtonStyle"
-      @mousedown="(e) => onMouseDown('nw-button', e)"
-    >
-      x
-    </button>
-    <button
-      class="cropper-edge-button"
-      ref="refSEButton"
-      :style="seButtonStyle"
-      @mousedown="(e) => onMouseDown('se-button', e)"
-    >
-      x
-    </button>
+      v-for="buttonType in buttonTypes"
+      :key="buttonType"
+      :style="buttonStyles[buttonType]"
+      @mousedown="(e) => onMouseDown(buttonType, e)"
+    />
 
     <div
       class="cropper-box"
@@ -37,175 +28,151 @@ const props = defineProps({
   },
 })
 
-const nwButtonStyle = ref({ cursor: 'nw-resize', left: '0px', top: '0px' })
-const seButtonStyle = ref({ cursor: 'se-resize', right: '0px', bottom: '0px' })
+const buttonTypes = ['nw-button', 'ne-button', 'sw-button', 'se-button']
+const buttonStyles = ref({
+  'nw-button': { cursor: 'nw-resize', left: '0px', top: '0px', transform: 'translate(-50%, -50%)' },
+  'ne-button': { cursor: 'ne-resize', right: '0px', top: '0px', transform: 'translate(50%, -50%)' },
+  'sw-button': { cursor: 'sw-resize', left: '0px', bottom: '0px', transform: 'translate(-50%, 50%)' },
+  'se-button': { cursor: 'se-resize', right: '0px', bottom: '0px', transform: 'translate(50%, 50%)' },
+})
 const cropperBoxStyle = computed(() => {
-  const { left, top } = nwButtonStyle.value
-  const { right, bottom } = seButtonStyle.value
+  const { left, top } = buttonStyles.value['nw-button']
+  const { right, bottom } = buttonStyles.value['se-button']
+
+  const cursor = buttonStyles.value[mouseDownedType.value]?.cursor || 'move'
 
   return {
     left,
     top,
     right,
     bottom,
+    cursor,
   }
 })
-
-const mouseDownedType = ref('')
 const appImageCropperV2Style = computed(() => {
-  if (mouseDownedType.value === 'nw-button') {
+  if (mouseDownedType.value === 'cropper-box') {
     return {
-      cursor: 'nw-resize',
+      cursor: 'move',
     }
   }
 
-  if (mouseDownedType.value === 'se-button') {
+  if (buttonTypes.includes(mouseDownedType.value)) {
     return {
-      cursor: 'se-resize',
+      cursor: buttonStyles.value[mouseDownedType.value]?.cursor,
     }
   }
 
   return {}
 })
 
+const mouseDownedType = ref('')
+const refAppImageCropperV2 = ref()
+const firstPositions = ref({})
+const minBoxSize = 60
+
+const refinePixelPostion = (value) => parseInt(value.replace('px', ''), 10)
+
 const onMouseDown = (type, { clientX, clientY }) => {
   mouseDownedType.value = type
 
-  firstPosition.value = {
-    clientX,
-    clientY,
-    nwButtonLeft: refinePositionNumber(nwButtonStyle.value.left),
-    nwButtonTop: refinePositionNumber(nwButtonStyle.value.top),
-    seButtonRight: refinePositionNumber(seButtonStyle.value.right),
-    seButtonBottom: refinePositionNumber(seButtonStyle.value.bottom),
+  const { width, height } = refAppImageCropperV2.value.getBoundingClientRect()
+
+  firstPositions.value = {
+    cursorX: clientX,
+    cursorY: clientY,
+    wrapperWidth: width,
+    wrapperHeight: height,
+    firstLeft: refinePixelPostion(buttonStyles.value['nw-button'].left),
+    firstTop: refinePixelPostion(buttonStyles.value['nw-button'].top),
+    firstRight: refinePixelPostion(buttonStyles.value['se-button'].right),
+    firstBottom: refinePixelPostion(buttonStyles.value['se-button'].bottom),
   }
 }
 
-onMounted(() => {
-  boundingClientRects.value = {
-    refAppImageCropperV2: refAppImageCropperV2.value.getBoundingClientRect(),
-    refNWButton: refNWButton.value.getBoundingClientRect(),
-    refSEButton: refSEButton.value.getBoundingClientRect(),
-  }
-
-  setTimeout(() => {
-    boundingClientRects.value.refAppImageCropperV2 = refAppImageCropperV2.value.getBoundingClientRect()
-  }, 400)
-})
-
-const refAppImageCropperV2 = ref()
-const refNWButton = ref()
-const refSEButton = ref()
-const refCropperBox = ref()
-const boundingClientRects = ref({})
-const firstPosition = ref({})
-
-const refinePositionNumber = (positon) => parseInt(positon.replaceAll('px', ''), 10)
-const minCropperBoxSize = 50
-const getSymmetryMovePostion = (value01, value02) => (value01 > value02 ? value01 : value02)
-const getNewPosition = (movedPosition, minPosition, maxPosition) => {
-  if (movedPosition < minPosition) {
-    return minPosition
-  }
-
-  if (movedPosition > maxPosition) {
-    return maxPosition
-  }
-
-  return movedPosition
+const refineNewPosition = (value, min, max) => {
+  if (value < min) return min
+  if (value > max) return max
+  return value
 }
 
-const checkMoveable = ({ clientX: cursorX, clientY: cursorY }) => {
-  const { clientX: newX, clientY: newY } = firstPosition.value
-
-  const nwButtonLeft = refinePositionNumber(nwButtonStyle.value.left)
-  const nwButtonTop = refinePositionNumber(nwButtonStyle.value.top)
-  const seButtonRight = refinePositionNumber(seButtonStyle.value.right)
-  const seButtonBottom = refinePositionNumber(seButtonStyle.value.bottom)
-
-  const results = []
-  if (cursorX - newX < 0 && nwButtonLeft <= 0) {
-    results.push(false)
-  }
-
-  if (cursorX - newX > 0 && seButtonRight <= 0) {
-    results.push(false)
-  }
-
-  if (cursorY - newY < 0 && nwButtonTop <= 0) {
-    results.push(false)
-  }
-
-  if (cursorY - newY > 0 && seButtonBottom <= 0) {
-    results.push(false)
-  }
-
-  return !results.includes(false)
-}
-
-const onMouseMove = (e) => {
+const onMouseMove = ({ clientX, clientY }) => {
   if (!mouseDownedType.value) return
-  const { width: wrapperWidth, height: wrapperHeight } = boundingClientRects.value.refAppImageCropperV2
-  const { clientX, clientY, nwButtonLeft, nwButtonTop, seButtonRight, seButtonBottom } = firstPosition.value
 
-  if (mouseDownedType.value === 'cropper-box' && checkMoveable(e)) {
-    nwButtonStyle.value.left = `${getNewPosition(
-      nwButtonLeft + e.clientX - clientX,
-      0,
-      nwButtonLeft + e.clientX - clientX
-    )}px`
-    nwButtonStyle.value.top = `${getNewPosition(
-      nwButtonTop + e.clientY - clientY,
-      0,
-      nwButtonTop + e.clientY - clientY
-    )}px`
-    seButtonStyle.value.right = `${getNewPosition(
-      seButtonRight - e.clientX + clientX,
-      0,
-      seButtonRight - e.clientX + clientX
-    )}px`
-    seButtonStyle.value.bottom = `${getNewPosition(
-      seButtonBottom - e.clientY + clientY,
-      0,
-      seButtonBottom - e.clientY + clientY
-    )}px`
-    return
-  }
-  const symmetryMovePostion = getSymmetryMovePostion(e.clientX - clientX, e.clientY - clientY)
+  const { cursorX, cursorY, wrapperWidth, wrapperHeight, firstLeft, firstTop, firstRight, firstBottom } =
+    firstPositions.value
+  const moveX = clientX - cursorX
+  const moveY = clientY - cursorY
 
-  if (mouseDownedType.value === 'nw-button') {
-    nwButtonStyle.value.left = `${getNewPosition(
-      nwButtonLeft + symmetryMovePostion,
-      0,
-      wrapperWidth - minCropperBoxSize - seButtonRight
-    )}px`
-    nwButtonStyle.value.top = `${getNewPosition(
-      nwButtonTop + symmetryMovePostion,
-      0,
-      wrapperHeight - minCropperBoxSize - seButtonBottom
-    )}px`
-    return
+  const symmetricAbsMove = (() => {
+    if (mouseDownedType.value === 'nw-button') return moveX > moveY ? moveX : moveY
+
+    if (mouseDownedType.value === 'ne-button') return moveX < -moveY ? moveX : -moveY
+
+    if (mouseDownedType.value === 'sw-button') return moveX > -moveY ? moveX : -moveY
+
+    if (mouseDownedType.value === 'se-button') return moveX < moveY ? moveX : moveY
+  })()
+
+  if (['nw-button', 'sw-button'].includes(mouseDownedType.value)) {
+    const newLeft = refineNewPosition(firstLeft + symmetricAbsMove, 0, wrapperWidth - firstRight - minBoxSize)
+
+    buttonStyles.value['nw-button'].left = `${newLeft}px`
+    buttonStyles.value['sw-button'].left = `${newLeft}px`
   }
 
-  if (mouseDownedType.value === 'se-button') {
-    seButtonStyle.value.right = `${getNewPosition(
-      seButtonRight - symmetryMovePostion,
-      0,
-      wrapperWidth - minCropperBoxSize - nwButtonLeft
-    )}px`
-    seButtonStyle.value.bottom = `${getNewPosition(
-      seButtonBottom - symmetryMovePostion,
-      0,
-      wrapperHeight - minCropperBoxSize - nwButtonTop
-    )}px`
-    return
+  if (['ne-button', 'se-button'].includes(mouseDownedType.value)) {
+    const newRight = refineNewPosition(firstRight - symmetricAbsMove, 0, wrapperWidth - firstLeft - minBoxSize)
+
+    buttonStyles.value['ne-button'].right = `${newRight}px`
+    buttonStyles.value['se-button'].right = `${newRight}px`
   }
+
+  if (['nw-button', 'ne-button'].includes(mouseDownedType.value)) {
+    const newTop = refineNewPosition(
+      firstTop + (mouseDownedType.value === 'nw-button' ? symmetricAbsMove : -symmetricAbsMove),
+      0,
+      wrapperHeight - firstBottom - minBoxSize
+    )
+
+    buttonStyles.value['nw-button'].top = `${newTop}px`
+    buttonStyles.value['ne-button'].top = `${newTop}px`
+  }
+
+  if (['sw-button', 'se-button'].includes(mouseDownedType.value)) {
+    const newBottom = refineNewPosition(
+      firstBottom + (mouseDownedType.value === 'sw-button' ? symmetricAbsMove : -symmetricAbsMove),
+      0,
+      wrapperHeight - firstTop - minBoxSize
+    )
+
+    buttonStyles.value['sw-button'].bottom = `${newBottom}px`
+    buttonStyles.value['se-button'].bottom = `${newBottom}px`
+  }
+
+  if (mouseDownedType.value !== 'cropper-box') return
+
+  const newLeft = refineNewPosition(firstLeft + moveX, 0, firstRight + firstLeft)
+  buttonStyles.value['sw-button'].left = `${newLeft}px`
+  buttonStyles.value['nw-button'].left = `${newLeft}px`
+
+  const newTop = refineNewPosition(firstTop + moveY, 0, firstBottom + firstTop)
+  buttonStyles.value['nw-button'].top = `${newTop}px`
+  buttonStyles.value['ne-button'].top = `${newTop}px`
+
+  const newRight = refineNewPosition(firstRight - moveX, 0, firstRight + firstLeft)
+  buttonStyles.value['se-button'].right = `${newRight}px`
+  buttonStyles.value['ne-button'].right = `${newRight}px`
+
+  const newBottom = refineNewPosition(firstBottom - moveY, 0, firstBottom + firstTop)
+  buttonStyles.value['sw-button'].bottom = `${newBottom}px`
+  buttonStyles.value['se-button'].bottom = `${newBottom}px`
 }
 
 const onMouseUp = () => {
-  if (mouseDownedType.value) {
-    mouseDownedType.value = ''
-  }
+  if (!mouseDownedType.value) return
+
+  mouseDownedType.value = ''
+  firstPositions.value = {}
 }
 
 watch(
@@ -244,16 +211,17 @@ defineExpose({
     z-index: 1;
     position: absolute;
     border: none;
-    width: 25px;
-    height: 25px;
-    background-color: #0eb36c;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: white;
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.12), 0px 2px 4px rgba(0, 0, 0, 0.24);
   }
 
   .cropper-box {
     z-index: 0;
     position: absolute;
-    border: 2px solid #0eb36c;
-    cursor: move;
+    border: 2px solid white;
   }
 }
 </style>
