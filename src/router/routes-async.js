@@ -31,6 +31,10 @@ const routesBasic = [
     path: '/change-model',
     component: () => import(/* webpackChunkName: 'view-change-model' */ '../components/views/view-change-model/ViewChangeModel.vue'),
   },
+  {
+    path: '/preview-image',
+    component: () => import(/* webpackChunkName: 'view-preview-image' */ '../components/views/view-preview-image/ViewPreviewImage.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)
