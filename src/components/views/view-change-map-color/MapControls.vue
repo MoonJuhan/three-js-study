@@ -16,6 +16,8 @@
         :fixedPoint="0"
         label="Color Range"
       />
+      <span>Color Picker Example</span>
+      <AppColorPicker v-model="exampleColor" />
     </div>
 
     <div class="controls">
@@ -29,6 +31,8 @@
           <input type="color" v-model="newColors[index]" />
           <span>{{ newColors[index] }}</span>
         </div>
+
+        <AppColorPicker v-model="newColors[index]" />
       </div>
     </div>
   </div>
@@ -38,6 +42,7 @@
 import { onMounted, ref, watch } from 'vue'
 import ColorThief from 'colorthief'
 import AppSlider from '@/components/app/AppSlider.vue'
+import AppColorPicker from '@/components/app/app-color-picker/AppColorPicker.vue'
 
 const emit = defineEmits(['change-map'])
 
@@ -208,6 +213,8 @@ watch(
 )
 
 const isSizeUp = ref(false)
+
+const exampleColor = ref('#ffffff')
 </script>
 
 <style lang="scss" scoped>
@@ -255,6 +262,8 @@ const isSizeUp = ref(false)
     display: flex;
     flex-direction: column;
     row-gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid black;
   }
 
   .target-color-wrapper {
