@@ -7,51 +7,29 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import sample_background_01 from '@/assets/sample-hdri-background/sample-hdri-background-01.png'
+
+let keydownCode
+let keydownItensity = 0
 
 const onkeydown = ({ code }) => {
-  if (code === 'ArrowUp') {
-    camera.position.y += 0.1
-    return
-  }
-
-  if (code === 'ArrowDown') {
-    camera.position.y -= 0.1
-    return
-  }
-
-  if (code === 'ArrowLeft') {
-    camera.position.x -= 0.1
-    return
-  }
-
-  if (code === 'ArrowRight') {
-    camera.position.x += 0.1
-    return
-  }
-
-  if (code === 'KeyZ') {
-    camera.position.z -= 0.1
-    return
-  }
-
-  if (code === 'KeyX') {
-    camera.position.z += 0.1
-    return
-  }
-
-  console.log(code)
+  keydownCode = code
 }
 
-let camera, scene, renderer, textureEquirec
+const onkeyup = (e) => {
+  keydownItensity = 0
+  keydownCode = null
+}
+
+let camera, scene, renderer, cube
 
 const refCanvasWrapper = ref()
 const init = () => {
   document.addEventListener('keydown', onkeydown)
+  document.addEventListener('keyup', onkeyup)
   const { width, height } = refCanvasWrapper.value.getBoundingClientRect()
 
   scene = new THREE.Scene()
+  scene.background = new THREE.Color(0xffffff)
 
   camera = new THREE.OrthographicCamera(width / -200, width / 200, height / 200, height / -200, 1, 1000)
   camera.position.z = 2
@@ -62,17 +40,14 @@ const init = () => {
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   refCanvasWrapper.value.appendChild(renderer.domElement)
 
-  const loader = new THREE.TextureLoader()
-
-  textureEquirec = loader.load(sample_background_01)
-  textureEquirec.mapping = THREE.EquirectangularReflectionMapping
-  textureEquirec.encoding = THREE.sRGBEncoding
-
   const geometry = new THREE.BoxGeometry(1, 1, 1)
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-  material.envMap = textureEquirec
-  material.envMapIntensity = 5
-  const cube = new THREE.Mesh(geometry, material)
+  const texture = new THREE.TextureLoader().load('purp.png')
+  const material = new THREE.MeshBasicMaterial({ map: texture })
+
+  cube = new THREE.Mesh(geometry, material)
+
+  // const light = new THREE.AmbientLight(0xffffff, 1)
+  // scene.add(light)
 
   scene.add(cube)
 
@@ -82,17 +57,57 @@ const init = () => {
   animate()
 }
 
+const checkRotate = () => {
+  if (cube.scale.x === 1) {
+    cube.rotation.z -= 0.04
+  } else {
+    cube.rotation.z += 0.04
+  }
+}
+const checkMove = () => {
+  if (keydownItensity < 100) {
+    keydownItensity += 1
+  }
+
+  if (keydownCode === 'ArrowUp') {
+    cube.position.y += 0.01
+    return
+  }
+
+  if (keydownCode === 'ArrowDown') {
+    cube.position.y -= 0.01
+    return
+  }
+
+  if (keydownCode === 'ArrowLeft') {
+    cube.scale.x = -1
+    cube.position.x -= 0.001 * keydownItensity
+    return
+  }
+
+  if (keydownCode === 'ArrowRight') {
+    cube.scale.x = 1
+    cube.position.x += 0.001 * keydownItensity
+    return
+  }
+}
+
 const animation = ref()
 const animate = () => {
   animation.value = requestAnimationFrame(animate)
+
+  checkRotate()
+  checkMove()
+
   renderer.render(scene, camera)
-  //   console.log(camera)
 }
 
 onMounted(init)
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onkeydown)
+  document.removeEventListener('keyup', onkeyup)
+
   cancelAnimationFrame(animation.value)
   renderer.dispose()
 })
