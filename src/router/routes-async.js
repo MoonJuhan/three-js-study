@@ -39,6 +39,10 @@ const routesBasic = [
     path: '/game-test',
     component: () => import(/* webpackChunkName: 'view-game-test' */ '../components/views/view-game-test/ViewGameTest.vue'),
   },
+  {
+    path: '/render-image',
+    component: () => import(/* webpackChunkName: 'view-render-image' */ '../components/views/view-render-image/ViewRenderImage.vue'),
+  },
 ]
 
 const routesAsync = [...routesBasic].map((o) => o)
